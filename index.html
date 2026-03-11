@@ -551,11 +551,11 @@
                 filtroFim: '',
                 filtroRapido: 'todos',
 
-                pedido: {
-                    tamanho: '500ML',
-                    tipo: 'tradicional',
-                    extras: []
-                },
+                pedido: { 
+                tamanho: null, 
+                tipo: null, 
+                extras: [] 
+                }
 
                 kpis: {
                     hoje: 0,
@@ -750,14 +750,14 @@
                     }
                 },
 
-                limpar() {
-                    this.editandoId = null;
-                    this.pedido = {
-                        tamanho: '500ML',
-                        tipo: 'tradicional',
-                        extras: []
-                    };
-                },
+                limpar() { 
+                this.editandoId = null; 
+                this.pedido = { 
+            tamanho: '500ML', 
+            tipo: 'tradicional', 
+            extras: [] 
+        }; 
+    }
 
                 checkLogin() {
                     if (this.senhaInput === '1234') {
