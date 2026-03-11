@@ -156,7 +156,7 @@
                                     <span class="text-xs font-bold" x-text="label"></span>
                                     <span
                                         class="text-xs font-black text-purple-700"
-                                        x-text="'R$ ' + precos[pedido.tamanho][tipo].toFixed(2)"
+                                        x-text="pedido.tamanho ? 'R$ ' + precos[pedido.tamanho][tipo].toFixed(2) : 'Selecione o copo'"
                                     ></span>
                                 </button>
                             </template>
@@ -191,7 +191,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-[10px] font-black uppercase tracking-widest text-purple-700">Resumo do Pedido</p>
-                                    <p class="text-sm font-bold text-gray-700 mt-1" x-text="tipos[pedido.tipo] + ' • ' + pedido.tamanho"></p>
+                                    <p class="text-sm font-bold text-gray-700 mt-1" x-text="pedido.tipo && pedido.tamanho ? tipos[pedido.tipo] + ' • ' + pedido.tamanho : 'Selecione um copo'"</p>
                                     <p class="text-[11px] text-gray-500 mt-1" x-text="pedido.extras.length ? 'Extras: ' + pedido.extras.join(', ') : 'Sem extras adicionais'"></p>
                                 </div>
                                 <div class="text-right">
@@ -650,11 +650,21 @@
                     return total / vendas.length;
                 },
 
-                calcularTotal() {
-                    const base = this.precos[this.pedido.tamanho][this.pedido.tipo];
-                    const extras = this.pedido.extras.reduce((acc, cur) => acc + this.adicionais[cur], 0);
-                    return base + extras;
-                },
+                calcularTotal(){
+
+                if(!this.pedido.tamanho || !this.pedido.tipo){
+                    return 0
+                    }
+
+                let base = this.precos[this.pedido.tamanho][this.pedido.tipo]
+
+                let extras = this.pedido.extras.reduce(
+                    (acc,cur)=>acc + this.adicionais[cur],0
+                    )
+
+                    return base + extras
+
+                }
 
                 async salvarVenda() {
                     this.loading = true;
