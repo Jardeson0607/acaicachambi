@@ -2,172 +2,162 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Açaí Mania | Sistema Profissional</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Açaí Mania | Dashboard</title>
     
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4a1d96">
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1256/1256758.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
-        .acai-gradient { background: linear-gradient(135deg, #4a1d96 0%, #2e1065 100%); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fcfcfd; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .btn-active { background-color: #4a1d96; color: white; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(74, 29, 150, 0.2); }
+        input[type="password"] { letter-spacing: 0.5em; }
         [x-cloak] { display: none !important; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body x-data="sistemaGestao()" x-init="init()">
 
-    <header class="acai-gradient text-white p-5 shadow-2xl sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="bg-yellow-400 p-2 rounded-xl shadow-inner text-lg">🍇</div>
-                <div>
-                    <h1 class="font-black text-xl tracking-tighter leading-none text-white">AÇAÍ MANIA</h1>
-                    <span class="text-[10px] uppercase tracking-widest text-purple-300">Gestão de Vendas</span>
-                </div>
-            </div>
-            <div class="flex bg-purple-900/50 p-1 rounded-2xl border border-white/10">
-                <button @click="aba = 'vendas'" :class="aba === 'vendas' ? 'bg-white text-purple-900' : 'text-white'" class="px-5 py-2 rounded-xl text-xs font-black transition-all">VENDAS</button>
-                <button @click="aba = 'gerencia'" :class="aba === 'gerencia' ? 'bg-white text-purple-900' : 'text-white'" class="px-5 py-2 rounded-xl text-xs font-black transition-all">GERÊNCIA</button>
-            </div>
-        </div>
-    </header>
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 glass border border-gray-100 px-2 py-2 rounded-2xl shadow-2xl flex gap-1 z-50">
+        <button @click="aba = 'vendas'" :class="aba === 'vendas' ? 'btn-active' : 'text-gray-400'" class="flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all">
+            <span>🛒</span> Vendas
+        </button>
+        <button @click="aba = 'gerencia'" :class="aba === 'gerencia' ? 'btn-active' : 'text-gray-400'" class="flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all">
+            <span>📈</span> Gerência
+        </button>
+    </nav>
 
-    <main class="max-w-6xl mx-auto p-4 md:p-8" x-cloak>
+    <main class="max-w-md mx-auto p-5 pb-32" x-cloak>
         
-        <div x-show="aba === 'vendas'" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2">
-                
-                <div x-show="editandoId" class="mb-4 bg-yellow-400 text-purple-900 p-4 rounded-2xl flex justify-between items-center font-bold shadow-lg">
-                    <span>⚠️ MODO DE EDIÇÃO ATIVO</span>
-                    <button @click="cancelarEdicao()" class="bg-purple-900 text-white px-3 py-1 rounded-lg text-xs">Cancelar</button>
+        <header class="flex justify-between items-center mb-8 pt-4">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-[#4a1d96] rounded-xl flex items-center justify-center text-white font-black italic shadow-lg">AM</div>
+                <h1 class="font-extrabold text-gray-900 tracking-tight">Açaí Mania</h1>
+            </div>
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
+                <div class="flex items-center gap-1 justify-end">
+                    <div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-bold text-green-600 uppercase">Cloud Online</span>
                 </div>
+            </div>
+        </header>
 
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-gray-100">
-                    <h2 class="text-2xl font-black text-gray-800 mb-8" x-text="editandoId ? 'Atualizar Venda' : 'Novo Pedido'"></h2>
-                    
-                    <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 block">1. Escolha o Tamanho</label>
-                    <div class="grid grid-cols-3 gap-3 mb-8">
+        <template x-if="aba === 'vendas'">
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-3xl border border-gray-50 shadow-sm">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-sm font-extrabold text-gray-800 uppercase tracking-tighter" x-text="editandoId ? '🔧 Ajustar Venda' : '⚡ Lançamento Rápido'"></h2>
+                        <span x-show="editandoId" @click="cancelarEdicao()" class="text-[10px] text-red-500 font-bold cursor-pointer">CANCELAR</span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 mb-6">
                         <template x-for="(valor, tam) in precos">
                             <button @click="pedido.tamanho = tam" 
-                                :class="pedido.tamanho === tam ? 'ring-4 ring-purple-100 bg-[#4a1d96] text-white shadow-lg scale-105' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'"
-                                class="p-5 rounded-2xl font-bold transition-all text-center">
-                                <span class="block text-lg" x-text="tam"></span>
-                            </button>
+                                :class="pedido.tamanho === tam ? 'border-2 border-[#4a1d96] bg-purple-50 text-[#4a1d96]' : 'bg-gray-50 text-gray-400'"
+                                class="py-3 rounded-xl font-bold text-xs transition-all" x-text="tam"></button>
                         </template>
                     </div>
 
-                    <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 block">2. Categoria</label>
-                    <div class="space-y-3 mb-10">
+                    <div class="space-y-2 mb-8">
                         <template x-for="(label, tipo) in tipos">
                             <button @click="pedido.tipo = tipo"
-                                :class="pedido.tipo === tipo ? 'border-2 border-purple-600 bg-purple-50' : 'border border-gray-100 bg-white'"
-                                class="w-full flex justify-between items-center p-6 rounded-3xl transition-all">
-                                <span class="font-extrabold text-gray-700 text-left" x-text="label"></span>
-                                <span class="text-xl font-black text-purple-700" x-text="'R$ ' + precos[pedido.tamanho][tipo].toFixed(2)"></span>
+                                :class="pedido.tipo === tipo ? 'bg-[#4a1d96] text-white shadow-lg shadow-purple-200' : 'bg-white border border-gray-100 text-gray-600'"
+                                class="w-full flex justify-between items-center px-5 py-4 rounded-2xl transition-all">
+                                <span class="text-xs font-bold" x-text="label"></span>
+                                <span class="text-sm font-black" x-text="'R$ ' + precos[pedido.tamanho][tipo].toFixed(2)"></span>
                             </button>
                         </template>
                     </div>
 
-                    <button @click="salvarVenda()" 
-                        :disabled="loading"
-                        :class="editandoId ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-500 hover:bg-green-600'"
-                        class="w-full text-white py-6 rounded-[2rem] font-black text-2xl shadow-2xl transition-all transform active:scale-95 disabled:opacity-50">
-                        <span x-text="loading ? 'SALVANDO...' : (editandoId ? 'SALVAR ALTERAÇÃO' : 'FINALIZAR: R$ ' + calcularTotal().toFixed(2))"></span>
+                    <button @click="salvarVenda()" :disabled="loading"
+                        class="w-full bg-gray-900 text-white py-5 rounded-2xl font-bold text-sm shadow-xl active:scale-95 transition-all disabled:opacity-50">
+                        <span x-text="loading ? '...' : (editandoId ? 'SALVAR ALTERAÇÃO' : 'CONFIRMAR VENDA (R$ ' + calcularTotal().toFixed(2) + ')')"></span>
                     </button>
                 </div>
-            </div>
 
-            <div class="space-y-6 text-center">
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-gray-100">
-                    <p class="text-gray-400 text-xs font-black uppercase tracking-widest mb-1">Vendas Hoje</p>
-                    <p class="text-5xl font-black text-purple-900" x-text="'R$ ' + kpis.hoje.toFixed(2)"></p>
-                </div>
-
-                <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-gray-100 text-left">
-                    <h3 class="font-black text-gray-800 mb-4 px-2">Pedidos Recentes</h3>
-                    <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
+                <div class="bg-white p-6 rounded-3xl border border-gray-50 shadow-sm">
+                    <h3 class="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-4">Últimas de Hoje</h3>
+                    <div class="space-y-4 max-h-64 overflow-y-auto custom-scroll">
                         <template x-for="v in vendas.filter(i => i.data_venda === hojeStr).slice().reverse()">
-                            <div class="p-4 bg-gray-50 rounded-2xl flex justify-between items-center hover:bg-purple-50 transition">
-                                <div class="text-xs">
-                                    <p class="font-black text-gray-800" x-text="v.tamanho"></p>
-                                    <p class="text-gray-400 font-bold" x-text="v.hora_venda"></p>
-                                </div>
+                            <div class="flex justify-between items-center group">
                                 <div class="flex items-center gap-3">
-                                    <span class="font-black text-green-600" x-text="'R$ ' + v.total.toFixed(2)"></span>
-                                    <button @click="prepararEdicao(v)" class="hover:scale-125 transition">✏️</button>
+                                    <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-xs">🥣</div>
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-800" x-text="v.tamanho"></p>
+                                        <p class="text-[9px] text-gray-400" x-text="v.hora_venda"></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-xs font-black text-gray-900" x-text="'R$ ' + v.total.toFixed(2)"></span>
+                                    <button @click="prepararEdicao(v)" class="text-xs grayscale hover:grayscale-0 transition">✏️</button>
                                 </div>
                             </div>
                         </template>
                     </div>
                 </div>
             </div>
-        </div>
+        </template>
 
-        <div x-show="aba === 'gerencia'" class="max-w-4xl mx-auto">
-            <div x-show="!auth" class="bg-white p-12 rounded-[3rem] shadow-2xl text-center border border-gray-100">
-                <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">🔑</div>
-                <h2 class="text-2xl font-black mb-2">Painel do Primo</h2>
-                <input type="password" x-model="senhaInput" placeholder="Sua Senha" class="w-full p-5 bg-gray-50 border-none rounded-2xl mb-6 text-center text-3xl tracking-[1rem] focus:ring-4 ring-purple-100 outline-none transition-all">
-                <button @click="checkLogin()" class="w-full bg-purple-900 text-white py-5 rounded-2xl font-black text-lg">ENTRAR</button>
-            </div>
-
-            <div x-show="auth" class="space-y-8">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-3xl font-black text-gray-900">Dashboard</h2>
-                    <button @click="auth = false" class="text-red-500 font-bold hover:bg-red-50 px-4 py-2 rounded-xl transition">Sair</button>
+        <template x-if="aba === 'gerencia'">
+            <div class="space-y-4">
+                <div x-show="!auth" class="bg-white p-10 rounded-[2.5rem] shadow-xl text-center border border-gray-50 mt-10">
+                    <h2 class="text-lg font-extrabold mb-6">Acesso GERÊNCIA</h2>
+                    <input type="password" x-model="senhaInput" placeholder="••••" class="w-full p-4 bg-gray-50 rounded-2xl mb-4 text-center text-2xl outline-none focus:ring-2 ring-purple-500">
+                    <button @click="checkLogin()" class="w-full bg-purple-900 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest">Entrar</button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-8 rounded-[2.5rem] shadow-lg border-b-8 border-purple-600">
-                        <p class="text-gray-400 font-black text-[10px] uppercase mb-1">Hoje</p>
-                        <p class="text-4xl font-black" x-text="'R$ ' + kpis.hoje.toFixed(2)"></p>
+                <div x-show="auth" class="space-y-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-xl font-black italic">GERÊNCIA</h2>
+                        <button @click="auth = false" class="text-[10px] font-bold text-red-500">LOGOUT</button>
                     </div>
-                    <div class="bg-white p-8 rounded-[2.5rem] shadow-lg border-b-8 border-blue-500">
-                        <p class="text-gray-400 font-black text-[10px] uppercase mb-1">Últimos 7 dias</p>
-                        <p class="text-4xl font-black" x-text="'R$ ' + kpis.semana.toFixed(2)"></p>
-                    </div>
-                    <div class="bg-white p-8 rounded-[2.5rem] shadow-lg border-b-8 border-green-500">
-                        <p class="text-gray-400 font-black text-[10px] uppercase mb-1">Mês Atual</p>
-                        <p class="text-4xl font-black" x-text="'R$ ' + kpis.mes.toFixed(2)"></p>
-                    </div>
-                </div>
 
-                <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase font-black">
-                            <tr><th class="p-6">Data</th><th class="p-6">Item</th><th class="p-6">Status</th><th class="p-6 text-right">Total</th></tr>
-                        </thead>
-                        <tbody class="text-sm">
-                            <template x-for="v in vendas.slice().reverse()">
-                                <tr class="border-b hover:bg-gray-50/50 transition">
-                                    <td class="p-6 text-gray-500" x-text="v.data_venda + ' ' + v.hora_venda"></td>
-                                    <td class="p-6">
-                                        <span class="font-black" x-text="v.tamanho"></span>
-                                        <span class="block text-[10px] text-gray-400" x-text="tipos[v.tipo]"></span>
-                                    </td>
-                                    <td class="p-6">
-                                        <span x-show="v.editado" class="bg-amber-100 text-amber-700 text-[10px] px-2 py-1 rounded-lg font-black uppercase">Editado</span>
-                                        <span x-show="!v.editado" class="text-gray-300 text-[10px]">Original</span>
-                                    </td>
-                                    <td class="p-6 text-right font-black text-green-600 text-lg" x-text="'R$ ' + v.total.toFixed(2)"></td>
-                                </tr>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-[#4a1d96] text-white p-5 rounded-3xl shadow-lg">
+                            <p class="text-[9px] font-bold opacity-60 uppercase mb-1">Faturamento Hoje</p>
+                            <p class="text-2xl font-black" x-text="'R$ ' + kpis.hoje.toFixed(2)"></p>
+                        </div>
+                        <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm text-center">
+                            <p class="text-[9px] font-bold text-gray-400 uppercase mb-1">Mês Atual</p>
+                            <p class="text-2xl font-black text-gray-900" x-text="'R$ ' + kpis.mes.toFixed(2)"></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-3xl border border-gray-50 shadow-sm">
+                        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 text-center">Desempenho Semanal</h3>
+                        <div class="flex justify-between items-end h-32 px-2">
+                            <template x-for="dia in relatorioSemanal">
+                                <div class="flex flex-col items-center gap-2">
+                                    <div class="w-3 bg-purple-100 rounded-full flex flex-col justify-end h-24 overflow-hidden">
+                                        <div class="bg-[#4a1d96] w-full transition-all duration-1000" :style="'height: ' + dia.porcentagem + '%'"></div>
+                                    </div>
+                                    <span class="text-[8px] font-bold text-gray-400" x-text="dia.nome"></span>
+                                </div>
                             </template>
-                        </tbody>
-                    </table>
+                        </div>
+                        <div class="mt-6 pt-4 border-t text-center">
+                            <p class="text-[10px] text-gray-400">Total 7 dias: <span class="text-gray-900 font-bold" x-text="'R$ ' + kpis.semana.toFixed(2)"></span></p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </template>
     </main>
 
     <script>
-        // === INSIRA SEUS DADOS AQUI ===
+        // CONFIGURAÇÃO SUPABASE
         const SUPABASE_URL = 'https://ascyawnpyinzadvxrlna.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_uF81MlGOAI5oLWVM4o9L6w_jKN90RXI';
-
-        // Inicialização do Supabase
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         function sistemaGestao() {
@@ -181,6 +171,7 @@
                 hojeStr: new Date().toLocaleDateString('pt-BR'),
                 pedido: { tamanho: '500ML', tipo: 'tradicional' },
                 kpis: { hoje: 0, semana: 0, mes: 0 },
+                relatorioSemanal: [],
 
                 precos: {
                     "200ML": { tradicional: 5.0, especial: 8.0, completo: 10.0 },
@@ -192,18 +183,16 @@
                 },
 
                 tipos: {
-                    tradicional: "Simples / Tradicional",
-                    especial: "Nutella ou Frutas",
-                    completo: "Nutella com Frutas"
+                    tradicional: "Tradicional",
+                    especial: "Nutella/Fruta",
+                    completo: "Nutella + Fruta"
                 },
 
                 async init() {
                     await this.buscarVendas();
-                    // Escutar mudanças em tempo real
-                    supabaseClient.channel('custom-all-channel')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, () => {
-                        this.buscarVendas();
-                    }).subscribe();
+                    supabaseClient.channel('vendas-live')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, () => this.buscarVendas())
+                    .subscribe();
                 },
 
                 async buscarVendas() {
@@ -211,6 +200,7 @@
                     if (!error) {
                         this.vendas = data || [];
                         this.calcularKPIs();
+                        this.gerarGrafico();
                     }
                 },
 
@@ -218,71 +208,58 @@
                     return this.precos[this.pedido.tamanho][this.pedido.tipo];
                 },
 
-                prepararEdicao(venda) {
-                    this.editandoId = venda.id;
-                    this.pedido.tamanho = venda.tamanho;
-                    this.pedido.tipo = venda.tipo;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                },
-
-                cancelarEdicao() {
-                    this.editandoId = null;
-                    this.pedido = { tamanho: '500ML', tipo: 'tradicional' };
-                },
-
                 async salvarVenda() {
                     this.loading = true;
                     const total = this.calcularTotal();
                     const agora = new Date();
 
-                    try {
-                        if (this.editandoId) {
-                            await supabaseClient.from('vendas')
-                                .update({ 
-                                    tamanho: this.pedido.tamanho, 
-                                    tipo: this.pedido.tipo, 
-                                    total: total, 
-                                    editado: true 
-                                })
-                                .eq('id', this.editandoId);
-                            alert("✅ Venda atualizada!");
-                        } else {
-                            await supabaseClient.from('vendas').insert([{
-                                tamanho: this.pedido.tamanho,
-                                tipo: this.pedido.tipo,
-                                total: total,
-                                data_venda: agora.toLocaleDateString('pt-BR'),
-                                hora_venda: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                            }]);
-                            alert("✅ Venda registrada!");
-                        }
+                    if (this.editandoId) {
+                        await supabaseClient.from('vendas').update({ tamanho: this.pedido.tamanho, tipo: this.pedido.tipo, total: total, editado: true }).eq('id', this.editandoId);
                         this.editandoId = null;
-                        this.pedido = { tamanho: '500ML', tipo: 'tradicional' };
-                        await this.buscarVendas();
-                    } catch (e) {
-                        alert("Erro ao conectar com o banco de dados.");
-                    } finally {
-                        this.loading = false;
+                    } else {
+                        await supabaseClient.from('vendas').insert([{
+                            tamanho: this.pedido.tamanho, tipo: this.pedido.tipo, total: total,
+                            data_venda: agora.toLocaleDateString('pt-BR'),
+                            hora_venda: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                        }]);
                     }
+                    this.pedido = { tamanho: '500ML', tipo: 'tradicional' };
+                    await this.buscarVendas();
+                    this.loading = false;
                 },
 
                 calcularKPIs() {
                     const agora = new Date();
-                    const seteDiasMs = 7 * 24 * 60 * 60 * 1000;
-
                     this.kpis.hoje = this.vendas.filter(v => v.data_venda === this.hojeStr).reduce((acc, v) => acc + Number(v.total), 0);
-                    this.kpis.semana = this.vendas.filter(v => (agora - new Date(v.created_at)) < seteDiasMs).reduce((acc, v) => acc + Number(v.total), 0);
+                    this.kpis.semana = this.vendas.filter(v => (agora - new Date(v.created_at)) < 7*24*60*60*1000).reduce((acc, v) => acc + Number(v.total), 0);
                     this.kpis.mes = this.vendas.filter(v => new Date(v.created_at).getMonth() === agora.getMonth()).reduce((acc, v) => acc + Number(v.total), 0);
                 },
 
-                checkLogin() {
-                    if(this.senhaInput === 'admin99') {
-                        this.auth = true;
-                        this.senhaInput = '';
-                    } else {
-                        alert("Senha incorreta!");
+                gerarGrafico() {
+                    const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                    const hoje = new Date();
+                    this.relatorioSemanal = [];
+                    
+                    for (let i = 6; i >= 0; i--) {
+                        let d = new Date();
+                        d.setDate(hoje.getDate() - i);
+                        let totalDia = this.vendas.filter(v => v.data_venda === d.toLocaleDateString('pt-BR')).reduce((acc, v) => acc + Number(v.total), 0);
+                        this.relatorioSemanal.push({ nome: dias[d.getDay()], valor: totalDia, porcentagem: Math.min((totalDia / 500) * 100, 100) });
                     }
-                }
+                },
+
+                checkLogin() {
+                    if(this.senhaInput === 'admin99') { this.auth = true; this.senhaInput = ''; }
+                },
+
+                prepararEdicao(venda) {
+                    this.editandoId = venda.id;
+                    this.pedido.tamanho = venda.tamanho;
+                    this.pedido.tipo = venda.tipo;
+                    this.aba = 'vendas';
+                },
+
+                cancelarEdicao() { this.editandoId = null; this.pedido = { tamanho: '500ML', tipo: 'tradicional' }; }
             }
         }
     </script>
