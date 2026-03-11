@@ -652,19 +652,19 @@
 
                 calcularTotal(){
 
-                if(!this.pedido.tamanho || !this.pedido.tipo){
-                    return 0
-                    }
+    if(!this.pedido.tamanho || !this.pedido.tipo){
+        return 0
+    }
 
-                let base = this.precos[this.pedido.tamanho][this.pedido.tipo]
+    let base = this.precos[this.pedido.tamanho][this.pedido.tipo]
 
-                let extras = this.pedido.extras.reduce(
-                    (acc,cur)=>acc + this.adicionais[cur],0
-                    )
+    let extras = this.pedido.extras.reduce(
+        (acc,cur)=>acc + this.adicionais[cur],0
+    )
 
-                    return base + extras
+    return base + extras
 
-                },
+},
 
                 async salvarVenda() {
                     this.loading = true;
@@ -763,11 +763,11 @@
                 limpar() { 
                 this.editandoId = null; 
                 this.pedido = { 
-            tamanho: '500ML', 
-            tipo: 'tradicional', 
-            extras: [] 
-        }; 
-    }
+        tamanho: null, 
+        tipo: null, 
+        extras: [] 
+    }; 
+},
 
                 checkLogin() {
                     if (this.senhaInput === '1234') {
