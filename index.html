@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Açaí Mania | Cloud System</title>
+    <title>Açaí Mania | Sistema Profissional</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
         .acai-gradient { background: linear-gradient(135deg, #4a1d96 0%, #2e1065 100%); }
@@ -19,9 +22,9 @@
     <header class="acai-gradient text-white p-5 shadow-2xl sticky top-0 z-50">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="bg-yellow-400 p-2 rounded-xl shadow-inner">🍇</div>
+                <div class="bg-yellow-400 p-2 rounded-xl shadow-inner text-lg">🍇</div>
                 <div>
-                    <h1 class="font-black text-xl tracking-tighter leading-none">AÇAÍ MANIA</h1>
+                    <h1 class="font-black text-xl tracking-tighter leading-none text-white">AÇAÍ MANIA</h1>
                     <span class="text-[10px] uppercase tracking-widest text-purple-300">Gestão de Vendas</span>
                 </div>
             </div>
@@ -36,70 +39,65 @@
         
         <div x-show="aba === 'vendas'" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2">
+                
                 <div x-show="editandoId" class="mb-4 bg-yellow-400 text-purple-900 p-4 rounded-2xl flex justify-between items-center font-bold shadow-lg">
                     <span>⚠️ MODO DE EDIÇÃO ATIVO</span>
                     <button @click="cancelarEdicao()" class="bg-purple-900 text-white px-3 py-1 rounded-lg text-xs">Cancelar</button>
                 </div>
 
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-gray-100">
-                    <h2 class="text-2xl font-black text-gray-800 mb-8" x-text="editandoId ? 'Atualizar Registro' : 'Lançar Novo Pedido'"></h2>
+                    <h2 class="text-2xl font-black text-gray-800 mb-8" x-text="editandoId ? 'Atualizar Venda' : 'Novo Pedido'"></h2>
                     
                     <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 block">1. Escolha o Tamanho</label>
                     <div class="grid grid-cols-3 gap-3 mb-8">
                         <template x-for="(valor, tam) in precos">
                             <button @click="pedido.tamanho = tam" 
-                                :class="pedido.tamanho === tam ? 'ring-4 ring-purple-100 bg-[#4a1d96] text-white shadow-lg' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'"
+                                :class="pedido.tamanho === tam ? 'ring-4 ring-purple-100 bg-[#4a1d96] text-white shadow-lg scale-105' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'"
                                 class="p-5 rounded-2xl font-bold transition-all text-center">
                                 <span class="block text-lg" x-text="tam"></span>
                             </button>
                         </template>
                     </div>
 
-                    <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 block">2. Selecione a Categoria</label>
+                    <label class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 block">2. Categoria</label>
                     <div class="space-y-3 mb-10">
                         <template x-for="(label, tipo) in tipos">
                             <button @click="pedido.tipo = tipo"
                                 :class="pedido.tipo === tipo ? 'border-2 border-purple-600 bg-purple-50' : 'border border-gray-100 bg-white'"
-                                class="w-full flex justify-between items-center p-6 rounded-3xl transition-all group">
-                                <span class="font-extrabold text-gray-700" x-text="label"></span>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs text-gray-400 font-bold uppercase">Preço:</span>
-                                    <span class="text-xl font-black text-purple-700" x-text="'R$ ' + precos[pedido.tamanho][tipo].toFixed(2)"></span>
-                                </div>
+                                class="w-full flex justify-between items-center p-6 rounded-3xl transition-all">
+                                <span class="font-extrabold text-gray-700 text-left" x-text="label"></span>
+                                <span class="text-xl font-black text-purple-700" x-text="'R$ ' + precos[pedido.tamanho][tipo].toFixed(2)"></span>
                             </button>
                         </template>
                     </div>
 
                     <button @click="salvarVenda()" 
                         :disabled="loading"
-                        :class="editandoId ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-500 hover:bg-green-600'"
+                        :class="editandoId ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-500 hover:bg-green-600'"
                         class="w-full text-white py-6 rounded-[2rem] font-black text-2xl shadow-2xl transition-all transform active:scale-95 disabled:opacity-50">
-                        <span x-text="loading ? 'PROCESSANDO...' : (editandoId ? 'SALVAR ALTERAÇÃO' : 'FINALIZAR: R$ ' + calcularTotal().toFixed(2))"></span>
+                        <span x-text="loading ? 'SALVANDO...' : (editandoId ? 'SALVAR ALTERAÇÃO' : 'FINALIZAR: R$ ' + calcularTotal().toFixed(2))"></span>
                     </button>
                 </div>
             </div>
 
-            <div class="space-y-6">
+            <div class="space-y-6 text-center">
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-gray-100">
                     <p class="text-gray-400 text-xs font-black uppercase tracking-widest mb-1">Vendas Hoje</p>
                     <p class="text-5xl font-black text-purple-900" x-text="'R$ ' + kpis.hoje.toFixed(2)"></p>
                 </div>
 
-                <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-gray-100">
-                    <h3 class="font-black text-gray-800 mb-6 flex items-center justify-between">
-                        <span>Recentes</span>
-                        <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-lg">LIVE</span>
-                    </h3>
-                    <div class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-gray-100 text-left">
+                    <h3 class="font-black text-gray-800 mb-4 px-2">Pedidos Recentes</h3>
+                    <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
                         <template x-for="v in vendas.filter(i => i.data_venda === hojeStr).slice().reverse()">
-                            <div class="p-4 bg-gray-50 rounded-2xl flex justify-between items-center border border-transparent hover:border-purple-200 transition">
-                                <div>
-                                    <p class="text-sm font-black text-gray-800" x-text="v.tamanho"></p>
-                                    <p class="text-[10px] text-gray-400 font-bold" x-text="v.hora_venda + ' • ' + tipos[v.tipo]"></p>
+                            <div class="p-4 bg-gray-50 rounded-2xl flex justify-between items-center hover:bg-purple-50 transition">
+                                <div class="text-xs">
+                                    <p class="font-black text-gray-800" x-text="v.tamanho"></p>
+                                    <p class="text-gray-400 font-bold" x-text="v.hora_venda"></p>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <span class="font-black text-green-600" x-text="'R$ ' + v.total.toFixed(2)"></span>
-                                    <button @click="prepararEdicao(v)" class="text-lg hover:scale-125 transition">✏️</button>
+                                    <button @click="prepararEdicao(v)" class="hover:scale-125 transition">✏️</button>
                                 </div>
                             </div>
                         </template>
@@ -110,82 +108,67 @@
 
         <div x-show="aba === 'gerencia'" class="max-w-4xl mx-auto">
             <div x-show="!auth" class="bg-white p-12 rounded-[3rem] shadow-2xl text-center border border-gray-100">
-                <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">🔐</div>
-                <h2 class="text-2xl font-black mb-2">Área Administrativa</h2>
-                <p class="text-gray-400 mb-8 text-sm">Insira a senha mestra para ver os lucros.</p>
-                <input type="password" x-model="senhaInput" placeholder="••••••" class="w-full p-5 bg-gray-50 border-none rounded-2xl mb-4 text-center text-3xl tracking-[1rem] focus:ring-4 ring-purple-100 transition-all">
-                <button @click="checkLogin()" class="w-full bg-purple-900 text-white py-5 rounded-2xl font-black text-lg">ACESSAR PAINEL</button>
+                <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">🔑</div>
+                <h2 class="text-2xl font-black mb-2">Painel do Primo</h2>
+                <input type="password" x-model="senhaInput" placeholder="Sua Senha" class="w-full p-5 bg-gray-50 border-none rounded-2xl mb-6 text-center text-3xl tracking-[1rem] focus:ring-4 ring-purple-100 outline-none transition-all">
+                <button @click="checkLogin()" class="w-full bg-purple-900 text-white py-5 rounded-2xl font-black text-lg">ENTRAR</button>
             </div>
 
             <div x-show="auth" class="space-y-8">
-                <div class="flex justify-between items-end">
-                    <div>
-                        <h2 class="text-4xl font-black text-gray-900 italic">Relatórios</h2>
-                        <p class="text-gray-400 font-bold uppercase text-[10px] tracking-[0.2rem]">Performance de Vendas</p>
-                    </div>
-                    <button @click="auth = false" class="text-red-500 font-black text-sm hover:underline">SAIR</button>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-black text-gray-900">Dashboard</h2>
+                    <button @click="auth = false" class="text-red-500 font-bold hover:bg-red-50 px-4 py-2 rounded-xl transition">Sair</button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white p-8 rounded-[2.5rem] shadow-lg border-b-8 border-purple-600">
                         <p class="text-gray-400 font-black text-[10px] uppercase mb-1">Hoje</p>
-                        <p class="text-4xl font-black text-gray-800" x-text="'R$ ' + kpis.hoje.toFixed(2)"></p>
+                        <p class="text-4xl font-black" x-text="'R$ ' + kpis.hoje.toFixed(2)"></p>
                     </div>
                     <div class="bg-white p-8 rounded-[2.5rem] shadow-lg border-b-8 border-blue-500">
                         <p class="text-gray-400 font-black text-[10px] uppercase mb-1">Últimos 7 dias</p>
-                        <p class="text-4xl font-black text-gray-800" x-text="'R$ ' + kpis.semana.toFixed(2)"></p>
+                        <p class="text-4xl font-black" x-text="'R$ ' + kpis.semana.toFixed(2)"></p>
                     </div>
                     <div class="bg-white p-8 rounded-[2.5rem] shadow-lg border-b-8 border-green-500">
-                        <p class="text-gray-400 font-black text-[10px] uppercase mb-1">Total Mês</p>
-                        <p class="text-4xl font-black text-gray-800" x-text="'R$ ' + kpis.mes.toFixed(2)"></p>
+                        <p class="text-gray-400 font-black text-[10px] uppercase mb-1">Mês Atual</p>
+                        <p class="text-4xl font-black" x-text="'R$ ' + kpis.mes.toFixed(2)"></p>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100">
-                    <div class="p-8 border-b flex justify-between items-center bg-gray-50/50">
-                        <h3 class="font-black text-xl">Livro de Caixa</h3>
-                        <span class="text-xs font-bold text-gray-400" x-text="vendas.length + ' registros encontrados'"></span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-gray-100/50 text-gray-400 text-[10px] uppercase font-black">
-                                <tr>
-                                    <th class="p-6">Data / Hora</th>
-                                    <th class="p-6">Produto</th>
-                                    <th class="p-6">Status</th>
-                                    <th class="p-6 text-right">Valor</th>
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase font-black">
+                            <tr><th class="p-6">Data</th><th class="p-6">Item</th><th class="p-6">Status</th><th class="p-6 text-right">Total</th></tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <template x-for="v in vendas.slice().reverse()">
+                                <tr class="border-b hover:bg-gray-50/50 transition">
+                                    <td class="p-6 text-gray-500" x-text="v.data_venda + ' ' + v.hora_venda"></td>
+                                    <td class="p-6">
+                                        <span class="font-black" x-text="v.tamanho"></span>
+                                        <span class="block text-[10px] text-gray-400" x-text="tipos[v.tipo]"></span>
+                                    </td>
+                                    <td class="p-6">
+                                        <span x-show="v.editado" class="bg-amber-100 text-amber-700 text-[10px] px-2 py-1 rounded-lg font-black uppercase">Editado</span>
+                                        <span x-show="!v.editado" class="text-gray-300 text-[10px]">Original</span>
+                                    </td>
+                                    <td class="p-6 text-right font-black text-green-600 text-lg" x-text="'R$ ' + v.total.toFixed(2)"></td>
                                 </tr>
-                            </thead>
-                            <tbody class="text-sm font-medium">
-                                <template x-for="v in vendas.slice().reverse()">
-                                    <tr class="border-b hover:bg-gray-50/50 transition">
-                                        <td class="p-6 text-gray-500" x-text="v.data_venda + ' ' + v.hora_venda"></td>
-                                        <td class="p-6">
-                                            <span class="font-black text-gray-800" x-text="v.tamanho"></span>
-                                            <span class="block text-[10px] text-gray-400" x-text="tipos[v.tipo]"></span>
-                                        </td>
-                                        <td class="p-6">
-                                            <span x-show="v.editado" class="bg-amber-100 text-amber-700 text-[10px] px-2 py-1 rounded-lg font-black tracking-tighter uppercase">Corrigido</span>
-                                            <span x-show="!v.editado" class="text-gray-300 text-[10px] font-bold">Original</span>
-                                        </td>
-                                        <td class="p-6 text-right font-black text-green-600 text-lg" x-text="'R$ ' + v.total.toFixed(2)"></td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
+                            </template>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        // === CONFIGURAÇÃO DO SUPABASE ===
-        // Substitua pelos seus dados do painel do Supabase
+        // === INSIRA SEUS DADOS AQUI ===
         const SUPABASE_URL = 'https://ascyawnpyinzadvxrlna.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_uF81MlGOAI5oLWVM4o9L6w_jKN90RXI';
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Inicialização do Supabase
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         function sistemaGestao() {
             return {
@@ -216,17 +199,17 @@
 
                 async init() {
                     await this.buscarVendas();
-                    // Escuta mudanças em tempo real (Opcional, mas muito profissional)
-                    supabase.channel('custom-all-channel')
+                    // Escutar mudanças em tempo real
+                    supabaseClient.channel('custom-all-channel')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, () => {
                         this.buscarVendas();
                     }).subscribe();
                 },
 
                 async buscarVendas() {
-                    const { data, error } = await supabase.from('vendas').select('*').order('created_at', { ascending: true });
+                    const { data, error } = await supabaseClient.from('vendas').select('*').order('created_at', { ascending: true });
                     if (!error) {
-                        this.vendas = data;
+                        this.vendas = data || [];
                         this.calcularKPIs();
                     }
                 },
@@ -252,50 +235,47 @@
                     const total = this.calcularTotal();
                     const agora = new Date();
 
-                    if (this.editandoId) {
-                        // UPDATE NO SUPABASE
-                        const { error } = await supabase.from('vendas')
-                            .update({ 
-                                tamanho: this.pedido.tamanho, 
-                                tipo: this.pedido.tipo, 
-                                total: total, 
-                                editado: true 
-                            })
-                            .eq('id', this.editandoId);
-                        
-                        if(!error) {
-                            alert("✅ Registro atualizado com sucesso!");
-                            this.editandoId = null;
+                    try {
+                        if (this.editandoId) {
+                            await supabaseClient.from('vendas')
+                                .update({ 
+                                    tamanho: this.pedido.tamanho, 
+                                    tipo: this.pedido.tipo, 
+                                    total: total, 
+                                    editado: true 
+                                })
+                                .eq('id', this.editandoId);
+                            alert("✅ Venda atualizada!");
+                        } else {
+                            await supabaseClient.from('vendas').insert([{
+                                tamanho: this.pedido.tamanho,
+                                tipo: this.pedido.tipo,
+                                total: total,
+                                data_venda: agora.toLocaleDateString('pt-BR'),
+                                hora_venda: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                            }]);
+                            alert("✅ Venda registrada!");
                         }
-                    } else {
-                        // INSERT NO SUPABASE
-                        const { error } = await supabase.from('vendas').insert([{
-                            tamanho: this.pedido.tamanho,
-                            tipo: this.pedido.tipo,
-                            total: total,
-                            data_venda: agora.toLocaleDateString('pt-BR'),
-                            hora_venda: agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-                        }]);
-                        if(!error) alert("✅ Venda salva no Banco de Dados!");
+                        this.editandoId = null;
+                        this.pedido = { tamanho: '500ML', tipo: 'tradicional' };
+                        await this.buscarVendas();
+                    } catch (e) {
+                        alert("Erro ao conectar com o banco de dados.");
+                    } finally {
+                        this.loading = false;
                     }
-
-                    this.pedido = { tamanho: '500ML', tipo: 'tradicional' };
-                    await this.buscarVendas();
-                    this.loading = false;
                 },
 
                 calcularKPIs() {
                     const agora = new Date();
-                    const hoje = this.hojeStr;
                     const seteDiasMs = 7 * 24 * 60 * 60 * 1000;
 
-                    this.kpis.hoje = this.vendas.filter(v => v.data_venda === hoje).reduce((acc, v) => acc + v.total, 0);
-                    this.kpis.semana = this.vendas.filter(v => (agora - new Date(v.created_at)) < seteDiasMs).reduce((acc, v) => acc + v.total, 0);
-                    this.kpis.mes = this.vendas.filter(v => new Date(v.created_at).getMonth() === agora.getMonth()).reduce((acc, v) => acc + v.total, 0);
+                    this.kpis.hoje = this.vendas.filter(v => v.data_venda === this.hojeStr).reduce((acc, v) => acc + Number(v.total), 0);
+                    this.kpis.semana = this.vendas.filter(v => (agora - new Date(v.created_at)) < seteDiasMs).reduce((acc, v) => acc + Number(v.total), 0);
+                    this.kpis.mes = this.vendas.filter(v => new Date(v.created_at).getMonth() === agora.getMonth()).reduce((acc, v) => acc + Number(v.total), 0);
                 },
 
                 checkLogin() {
-                    // Substitua a senha abaixo pela senha que seu primo quiser
                     if(this.senhaInput === 'admin99') {
                         this.auth = true;
                         this.senhaInput = '';
