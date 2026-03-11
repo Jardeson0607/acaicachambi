@@ -1,86 +1,184 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Açaí Mania | PDV & Gerência</title>
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#4a1d96">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1256/1256758.png">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#4a1d96" />
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1256/1256758.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet" />
+
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f4f4f9; color: #1a1a1a; }
-        [x-cloak] { display: none !important; }
-        .tab-active { background: #4a1d96 !important; color: white !important; shadow: 0 4px 12px rgba(74, 29, 150, 0.3); }
-        .card { background: white; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #eee; }
-        .extra-selected { border-color: #4a1d96 !important; background-color: #f5f3ff !important; color: #4a1d96 !important; font-weight: 800; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f4f4f9;
+            color: #1a1a1a;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .tab-active {
+            background: #4a1d96 !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(74, 29, 150, 0.3);
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            border: 1px solid #eee;
+        }
+
+        .extra-selected {
+            border-color: #4a1d96 !important;
+            background-color: #f5f3ff !important;
+            color: #4a1d96 !important;
+            font-weight: 800;
+        }
+
+        .input-professional {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .input-professional:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.08);
+        }
+
+        .btn-filter {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            transition: 0.2s;
+            border: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        .btn-filter.active {
+            background: #4a1d96;
+            color: white;
+            border-color: #4a1d96;
+            box-shadow: 0 8px 20px rgba(74, 29, 150, 0.18);
+        }
     </style>
 </head>
 <body x-data="app()" x-init="init()">
 
-    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 px-4 py-3">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-40 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-4">
             <div class="flex items-center gap-2">
                 <div class="w-9 h-9 bg-[#4a1d96] rounded-xl flex items-center justify-center text-white font-black italic">A</div>
-                <h1 class="font-extrabold text-sm tracking-tight text-[#4a1d96]">AÇAÍ MANIA</h1>
+                <div>
+                    <h1 class="font-extrabold text-sm tracking-tight text-[#4a1d96]">AÇAÍ MANIA</h1>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">PDV & Gerência</p>
+                </div>
             </div>
-            
-            <div class="flex bg-gray-100 p-1 rounded-xl w-48">
-                <button @click="aba = 'vendas'" :class="aba === 'vendas' ? 'tab-active' : 'text-gray-400'" class="flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all">Vendas</button>
-                <button @click="aba = 'gerencia'" :class="aba === 'gerencia' ? 'tab-active' : 'text-gray-400'" class="flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all">Gerência</button>
+
+            <div class="flex bg-gray-100 p-1 rounded-xl w-52">
+                <button
+                    @click="aba = 'vendas'"
+                    :class="aba === 'vendas' ? 'tab-active' : 'text-gray-400'"
+                    class="flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all"
+                >
+                    Vendas
+                </button>
+                <button
+                    @click="aba = 'gerencia'"
+                    :class="aba === 'gerencia' ? 'tab-active' : 'text-gray-400'"
+                    class="flex-1 py-2 rounded-lg text-[10px] font-black uppercase transition-all"
+                >
+                    Gerência
+                </button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto p-4 md:p-6" x-cloak>
+    <main class="max-w-6xl mx-auto p-4 md:p-6" x-cloak>
 
+        <!-- ABA VENDAS -->
         <template x-if="aba === 'vendas'">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                
+
+                <!-- FORM PEDIDO -->
                 <div class="md:col-span-7 space-y-4">
                     <div class="card p-6">
                         <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-lg font-black" x-text="editandoId ? '✏️ Editar Venda' : '🛒 Novo Pedido'"></h2>
-                            <button x-show="editandoId" @click="limpar()" class="text-[10px] font-bold text-red-500 underline">CANCELAR</button>
+                            <div>
+                                <h2 class="text-lg font-black" x-text="editandoId ? '✏️ Editar Venda' : '🛒 Novo Pedido'"></h2>
+                                <p class="text-[11px] text-gray-400 mt-1" x-text="editandoId ? 'Você está alterando uma venda já cadastrada.' : 'Selecione o copo, o estilo e os adicionais.'"></p>
+                            </div>
+                            <button
+                                x-show="editandoId"
+                                @click="limpar()"
+                                class="text-[10px] font-bold text-red-500 underline"
+                            >
+                                CANCELAR
+                            </button>
                         </div>
 
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Tamanho do Copo</p>
-                        <div class="grid grid-cols-3 gap-2 mb-6">
-                            <template x-for="(valor, tam) in precos">
-                                <button @click="pedido.tamanho = tam" 
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-6">
+                            <template x-for="(valor, tam) in precos" :key="tam">
+                                <button
+                                    @click="pedido.tamanho = tam"
                                     :class="pedido.tamanho === tam ? 'bg-[#4a1d96] text-white shadow-md' : 'bg-gray-50 text-gray-500'"
-                                    class="py-3 rounded-xl text-xs font-bold transition-all border border-transparent" x-text="tam"></button>
+                                    class="py-3 rounded-xl text-xs font-bold transition-all border border-transparent"
+                                    x-text="tam"
+                                ></button>
                             </template>
                         </div>
 
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Estilo</p>
                         <div class="space-y-2 mb-6">
-                            <template x-for="(label, tipo) in tipos">
-                                <button @click="pedido.tipo = tipo"
+                            <template x-for="(label, tipo) in tipos" :key="tipo">
+                                <button
+                                    @click="pedido.tipo = tipo"
                                     :class="pedido.tipo === tipo ? 'border-2 border-purple-600 bg-purple-50' : 'border border-gray-100 bg-white'"
-                                    class="w-full flex justify-between items-center p-4 rounded-xl transition-all">
+                                    class="w-full flex justify-between items-center p-4 rounded-xl transition-all"
+                                >
                                     <span class="text-xs font-bold" x-text="label"></span>
-                                    <span class="text-xs font-black text-purple-700" x-text="'R$ ' + precos[pedido.tamanho][tipo].toFixed(2)"></span>
+                                    <span
+                                        class="text-xs font-black text-purple-700"
+                                        x-text="'R$ ' + precos[pedido.tamanho][tipo].toFixed(2)"
+                                    ></span>
                                 </button>
                             </template>
                         </div>
 
                         <div class="bg-gray-50 p-4 rounded-2xl mb-8">
                             <p class="text-[10px] font-black text-purple-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                🌟 Adicionais Extras (Chantilly/Nutella)
+                                🌟 Adicionais Extras
                             </p>
                             <div class="grid grid-cols-1 gap-2">
-                                <template x-for="(preco, nome) in adicionais">
-                                    <label :class="pedido.extras.includes(nome) ? 'extra-selected border-purple-600' : 'bg-white border-gray-100 text-gray-500'" 
-                                           class="flex justify-between items-center p-4 border rounded-xl cursor-pointer transition-all shadow-sm">
+                                <template x-for="(preco, nome) in adicionais" :key="nome">
+                                    <label
+                                        :class="pedido.extras.includes(nome) ? 'extra-selected border-purple-600' : 'bg-white border-gray-100 text-gray-500'"
+                                        class="flex justify-between items-center p-4 border rounded-xl cursor-pointer transition-all shadow-sm"
+                                    >
                                         <div class="flex items-center gap-3">
-                                            <input type="checkbox" :value="nome" x-model="pedido.extras" class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                            <input
+                                                type="checkbox"
+                                                :value="nome"
+                                                x-model="pedido.extras"
+                                                class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                            />
                                             <span class="text-xs font-bold" x-text="nome"></span>
                                         </div>
                                         <span class="text-xs font-black" x-text="'+ R$ ' + preco.toFixed(2)"></span>
@@ -89,30 +187,73 @@
                             </div>
                         </div>
 
-                        <button @click="salvarVenda()" :disabled="loading"
-                            class="w-full bg-[#4a1d96] text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 disabled:opacity-50 flex flex-col items-center leading-none">
-                            <span class="text-[10px] opacity-70 mb-1 uppercase tracking-tighter" x-text="editandoId ? 'Atualizar no Banco' : 'Finalizar e Cobrar'"></span>
+                        <div class="bg-purple-50 border border-purple-100 rounded-2xl p-4 mb-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-purple-700">Resumo do Pedido</p>
+                                    <p class="text-sm font-bold text-gray-700 mt-1" x-text="tipos[pedido.tipo] + ' • ' + pedido.tamanho"></p>
+                                    <p class="text-[11px] text-gray-500 mt-1" x-text="pedido.extras.length ? 'Extras: ' + pedido.extras.join(', ') : 'Sem extras adicionais'"></p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] text-gray-400 font-black uppercase">Total</p>
+                                    <p class="text-2xl font-black text-[#4a1d96]" x-text="'R$ ' + calcularTotal().toFixed(2)"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            @click="salvarVenda()"
+                            :disabled="loading"
+                            class="w-full bg-[#4a1d96] text-white py-5 rounded-2xl font-black text-lg shadow-xl active:scale-95 disabled:opacity-50 flex flex-col items-center leading-none"
+                        >
+                            <span
+                                class="text-[10px] opacity-70 mb-1 uppercase tracking-tighter"
+                                x-text="editandoId ? 'Atualizar no Banco' : 'Finalizar e Cobrar'"
+                            ></span>
                             <span x-text="loading ? '...' : 'R$ ' + calcularTotal().toFixed(2)"></span>
                         </button>
                     </div>
                 </div>
 
+                <!-- FATURAMENTO HOJE -->
                 <div class="md:col-span-5 space-y-4">
                     <div class="card p-5">
                         <div class="flex justify-between items-baseline mb-4">
-                            <h3 class="text-[10px] font-black text-gray-400 uppercase">Faturamento Hoje</h3>
+                            <div>
+                                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Faturamento Hoje</h3>
+                                <p class="text-[11px] text-gray-400 mt-1">Resumo do dia atual</p>
+                            </div>
                             <span class="text-2xl font-black text-green-600" x-text="'R$ ' + kpis.hoje.toFixed(2)"></span>
                         </div>
+
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                <p class="text-[10px] font-black text-gray-400 uppercase">Qtd. vendas</p>
+                                <p class="text-xl font-black mt-1" x-text="vendasHoje().length"></p>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                <p class="text-[10px] font-black text-gray-400 uppercase">Ticket médio</p>
+                                <p class="text-xl font-black mt-1" x-text="'R$ ' + ticketMedioHoje().toFixed(2)"></p>
+                            </div>
+                        </div>
+
                         <div class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-                            <template x-for="v in vendasHoje()">
+                            <template x-if="vendasHoje().length === 0">
+                                <div class="text-center py-10 text-gray-400 text-sm">
+                                    Nenhuma venda cadastrada hoje.
+                                </div>
+                            </template>
+
+                            <template x-for="v in vendasHoje().slice().reverse()" :key="v.id">
                                 <div class="p-4 bg-gray-50 rounded-xl border border-transparent hover:border-purple-200 flex justify-between items-center">
-                                    <div>
-                                        <p class="text-[11px] font-black text-gray-800" x-text="v.tamanho"></p>
-                                        <p class="text-[9px] text-gray-400" x-text="v.hora_venda + ' • ' + tipos[v.tipo]"></p>
+                                    <div class="min-w-0">
+                                        <p class="text-[11px] font-black text-gray-800" x-text="v.tamanho + ' • ' + tipos[v.tipo]"></p>
+                                        <p class="text-[9px] text-gray-400 mt-1" x-text="v.hora_venda + (v.extras && v.extras.length ? ' • ' + v.extras.join(', ') : '')"></p>
                                     </div>
-                                    <div class="flex items-center gap-4">
-                                        <span class="text-xs font-black text-gray-900" x-text="'R$ ' + v.total.toFixed(2)"></span>
+                                    <div class="flex items-center gap-3 shrink-0">
+                                        <span class="text-xs font-black text-gray-900" x-text="'R$ ' + Number(v.total).toFixed(2)"></span>
                                         <button @click="prepararEdicao(v)" class="text-sm">✏️</button>
+                                        <button @click="confirmarExclusao(v)" class="text-sm">🗑️</button>
                                     </div>
                                 </div>
                             </template>
@@ -122,67 +263,268 @@
             </div>
         </template>
 
+        <!-- ABA GERENCIA -->
         <template x-if="aba === 'gerencia'">
             <div class="space-y-6">
                 <div x-show="!auth" class="max-w-md mx-auto card p-10 text-center mt-10">
-                    <h2 class="font-black text-lg mb-6 tracking-widest">ACESSO RESTRITO</h2>
-                    <input type="password" x-model="senhaInput" placeholder="PIN" class="w-full p-4 bg-gray-50 rounded-xl mb-4 text-center text-3xl tracking-[1rem] outline-none border focus:border-purple-600">
-                    <button @click="checkLogin()" class="w-full bg-[#4a1d96] text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg">Entrar</button>
+                    <h2 class="font-black text-lg mb-2 tracking-widest">ACESSO RESTRITO</h2>
+                    <p class="text-sm text-gray-400 mb-6">Entre com o PIN para acessar o painel gerencial.</p>
+
+                    <input
+                        type="password"
+                        x-model="senhaInput"
+                        placeholder="PIN"
+                        class="w-full p-4 bg-gray-50 rounded-xl mb-4 text-center text-3xl tracking-[1rem] outline-none border focus:border-purple-600"
+                    />
+
+                    <button
+                        @click="checkLogin()"
+                        class="w-full bg-[#4a1d96] text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg"
+                    >
+                        Entrar
+                    </button>
                 </div>
 
                 <div x-show="auth" class="space-y-6">
-                    <div class="flex justify-between items-center px-2">
-                        <h2 class="text-xl font-black tracking-tight">RELATÓRIO DE GESTÃO</h2>
-                        <button @click="auth = false; senhaInput = ''" class="text-[10px] font-black text-red-500 border border-red-200 px-3 py-1 rounded-lg">SAIR</button>
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 px-1">
+                        <div>
+                            <h2 class="text-xl font-black tracking-tight">RELATÓRIO DE GESTÃO</h2>
+                            <p class="text-sm text-gray-400">Acompanhe faturamento, período, vendas e desempenho.</p>
+                        </div>
+
+                        <button
+                            @click="auth = false; senhaInput = ''"
+                            class="text-[10px] font-black text-red-500 border border-red-200 px-3 py-2 rounded-lg w-fit"
+                        >
+                            SAIR
+                        </button>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- FILTROS -->
+                    <div class="card p-5">
+                        <div class="flex flex-col gap-5">
+                            <div>
+                                <h3 class="font-black text-[10px] text-gray-400 uppercase tracking-widest">Filtros do Relatório</h3>
+                                <p class="text-sm text-gray-400 mt-1">Escolha um período personalizado ou use atalhos rápidos.</p>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <button
+                                    @click="setFiltroRapido('hoje')"
+                                    :class="filtroRapido === 'hoje' ? 'btn-filter active' : 'btn-filter'"
+                                >
+                                    Hoje
+                                </button>
+                                <button
+                                    @click="setFiltroRapido('7dias')"
+                                    :class="filtroRapido === '7dias' ? 'btn-filter active' : 'btn-filter'"
+                                >
+                                    Últimos 7 dias
+                                </button>
+                                <button
+                                    @click="setFiltroRapido('mes')"
+                                    :class="filtroRapido === 'mes' ? 'btn-filter active' : 'btn-filter'"
+                                >
+                                    Este mês
+                                </button>
+                                <button
+                                    @click="setFiltroRapido('todos')"
+                                    :class="filtroRapido === 'todos' ? 'btn-filter active' : 'btn-filter'"
+                                >
+                                    Tudo
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                <div>
+                                    <label class="text-[11px] font-black text-gray-500 block mb-2 uppercase">Data inicial</label>
+                                    <input type="date" x-model="filtroInicio" class="input-professional">
+                                </div>
+
+                                <div>
+                                    <label class="text-[11px] font-black text-gray-500 block mb-2 uppercase">Data final</label>
+                                    <input type="date" x-model="filtroFim" class="input-professional">
+                                </div>
+
+                                <button
+                                    @click="aplicarFiltroManual()"
+                                    class="h-[50px] bg-[#4a1d96] text-white rounded-xl font-black text-xs uppercase shadow-lg"
+                                >
+                                    Aplicar filtro
+                                </button>
+
+                                <button
+                                    @click="limparFiltro()"
+                                    class="h-[50px] bg-gray-100 text-gray-700 rounded-xl font-black text-xs uppercase"
+                                >
+                                    Limpar
+                                </button>
+                            </div>
+
+                            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Período em exibição</p>
+                                <p class="text-sm font-bold text-gray-700 mt-1" x-text="descricaoPeriodo()"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPIS -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="card p-6 border-l-8 border-purple-600">
-                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Hoje</p>
-                            <p class="text-3xl font-black text-gray-900" x-text="'R$ ' + kpis.hoje.toFixed(2)"></p>
+                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Faturamento</p>
+                            <p class="text-3xl font-black text-gray-900" x-text="'R$ ' + kpisFiltrados.total.toFixed(2)"></p>
                         </div>
+
                         <div class="card p-6 border-l-8 border-blue-500">
-                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Últimos 7 dias</p>
-                            <p class="text-3xl font-black text-gray-900" x-text="'R$ ' + kpis.semana.toFixed(2)"></p>
+                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Qtd. vendas</p>
+                            <p class="text-3xl font-black text-gray-900" x-text="kpisFiltrados.quantidade"></p>
                         </div>
+
                         <div class="card p-6 border-l-8 border-green-500">
-                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Mês</p>
-                            <p class="text-3xl font-black text-gray-900" x-text="'R$ ' + kpis.mes.toFixed(2)"></p>
+                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Ticket médio</p>
+                            <p class="text-3xl font-black text-gray-900" x-text="'R$ ' + kpisFiltrados.ticket.toFixed(2)"></p>
+                        </div>
+
+                        <div class="card p-6 border-l-8 border-amber-500">
+                            <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Maior venda</p>
+                            <p class="text-3xl font-black text-gray-900" x-text="'R$ ' + kpisFiltrados.maior.toFixed(2)"></p>
                         </div>
                     </div>
 
+                    <!-- HISTÓRICO -->
                     <div class="card overflow-hidden">
-                        <div class="p-5 border-b bg-gray-50">
-                            <h3 class="font-black text-[10px] text-gray-400 uppercase tracking-widest">Histórico Detalhado</h3>
+                        <div class="p-5 border-b bg-gray-50 flex items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-black text-[10px] text-gray-400 uppercase tracking-widest">Histórico Detalhado</h3>
+                                <p class="text-sm text-gray-400 mt-1">Todas as vendas do período filtrado.</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] font-black text-gray-400 uppercase">Registros</p>
+                                <p class="text-lg font-black text-gray-800" x-text="vendasFiltradas().length"></p>
+                            </div>
                         </div>
+
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left">
+                            <table class="w-full text-left min-w-[900px]">
                                 <thead class="bg-white text-[9px] font-black text-gray-300 uppercase">
                                     <tr>
                                         <th class="p-5">Data</th>
                                         <th class="p-5">Copo</th>
-                                        <th class="p-5 text-right font-black">Total</th>
+                                        <th class="p-5">Estilo</th>
+                                        <th class="p-5">Extras</th>
+                                        <th class="p-5 text-right">Total</th>
+                                        <th class="p-5 text-right">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody class="text-[11px]">
-                                    <template x-for="v in vendas.slice().reverse()">
+                                    <template x-if="vendasFiltradas().length === 0">
+                                        <tr>
+                                            <td colspan="6" class="p-10 text-center text-gray-400">
+                                                Nenhuma venda encontrada para esse período.
+                                            </td>
+                                        </tr>
+                                    </template>
+
+                                    <template x-for="v in vendasFiltradas().slice().reverse()" :key="v.id">
                                         <tr class="border-t border-gray-50 hover:bg-gray-50 transition-colors">
                                             <td class="p-5 text-gray-400" x-text="v.data_venda + ' ' + v.hora_venda"></td>
+
                                             <td class="p-5">
-                                                <span class="font-extrabold text-gray-800" x-text="v.tamanho"></span>
-                                                <template x-if="v.editado"><span class="ml-2 text-[8px] bg-amber-100 text-amber-700 px-1 rounded">EDITADO</span></template>
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <span class="font-extrabold text-gray-800" x-text="v.tamanho"></span>
+                                                    <template x-if="v.editado">
+                                                        <span class="text-[8px] bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-bold">EDITADO</span>
+                                                    </template>
+                                                </div>
                                             </td>
-                                            <td class="p-5 text-right font-black text-green-600 text-sm" x-text="'R$ ' + v.total.toFixed(2)"></td>
+
+                                            <td class="p-5 text-gray-700 font-bold" x-text="tipos[v.tipo]"></td>
+
+                                            <td class="p-5 text-gray-500" x-text="(v.extras && v.extras.length) ? v.extras.join(', ') : 'Sem extras'"></td>
+
+                                            <td class="p-5 text-right font-black text-green-600 text-sm" x-text="'R$ ' + Number(v.total).toFixed(2)"></td>
+
+                                            <td class="p-5 text-right">
+                                                <div class="flex justify-end gap-2">
+                                                    <button
+                                                        @click="prepararEdicao(v)"
+                                                        class="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 font-black text-[10px] uppercase"
+                                                    >
+                                                        Editar
+                                                    </button>
+
+                                                    <button
+                                                        @click="confirmarExclusao(v)"
+                                                        class="px-3 py-2 rounded-lg bg-red-50 text-red-700 font-black text-[10px] uppercase"
+                                                    >
+                                                        Excluir
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     </template>
                                 </tbody>
                             </table>
                         </div>
                     </div>
+
+                    <!-- RESUMO SECUNDARIO -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="card p-5">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Mais vendido por tamanho</p>
+                            <p class="text-lg font-black text-gray-900 mt-2" x-text="maisVendidoTamanho() || '—'"></p>
+                        </div>
+
+                        <div class="card p-5">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Mais vendido por estilo</p>
+                            <p class="text-lg font-black text-gray-900 mt-2" x-text="maisVendidoTipo() || '—'"></p>
+                        </div>
+
+                        <div class="card p-5">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total de extras vendidos</p>
+                            <p class="text-lg font-black text-gray-900 mt-2" x-text="totalExtrasVendidos()"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </template>
     </main>
+
+    <!-- MODAL EXCLUIR -->
+    <div
+        x-show="modalDelete"
+        x-transition
+        class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+        x-cloak
+    >
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
+            <div class="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center text-2xl mb-4 mx-auto">
+                🗑️
+            </div>
+
+            <h3 class="text-xl font-black text-center mb-2">Excluir venda?</h3>
+            <p class="text-sm text-gray-500 text-center mb-6">
+                Tem certeza que deseja excluir esta venda?
+                Essa ação não poderá ser desfeita.
+            </p>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button
+                    @click="modalDelete = false; deleteId = null"
+                    class="py-3 rounded-2xl bg-gray-100 text-gray-700 font-black"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    @click="excluirVenda()"
+                    class="py-3 rounded-2xl bg-red-600 text-white font-black"
+                >
+                    Excluir
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // CONFIG SUPABASE
@@ -192,10 +534,41 @@
 
         function app() {
             return {
-                aba: 'vendas', auth: false, loading: false, senhaInput: '', editandoId: null,
-                vendas: [], hojeStr: new Date().toLocaleDateString('pt-BR'),
-                pedido: { tamanho: '500ML', tipo: 'tradicional', extras: [] },
-                kpis: { hoje: 0, semana: 0, mes: 0 },
+                aba: 'vendas',
+                auth: false,
+                loading: false,
+                senhaInput: '',
+                editandoId: null,
+
+                modalDelete: false,
+                deleteId: null,
+
+                vendas: [],
+                hojeStr: '',
+                hojeISO: '',
+
+                filtroInicio: '',
+                filtroFim: '',
+                filtroRapido: 'todos',
+
+                pedido: {
+                    tamanho: '500ML',
+                    tipo: 'tradicional',
+                    extras: []
+                },
+
+                kpis: {
+                    hoje: 0,
+                    semana: 0,
+                    mes: 0
+                },
+
+                kpisFiltrados: {
+                    total: 0,
+                    quantidade: 0,
+                    ticket: 0,
+                    maior: 0
+                },
 
                 precos: {
                     "200ML": { tradicional: 5.0, especial: 8.0, completo: 10.0 },
@@ -205,11 +578,13 @@
                     "700ML": { tradicional: 17.0, especial: 22.0, completo: 25.0 },
                     "1 LITRO": { tradicional: 23.0, especial: 29.0, completo: 32.0 }
                 },
+
                 tipos: {
                     tradicional: "Simples / Tradicional",
                     especial: "Nutella ou Frutas",
                     completo: "Nutella com Frutas"
                 },
+
                 adicionais: {
                     "Chantilly": 4.0,
                     "Creme de Cookies": 6.0,
@@ -217,60 +592,353 @@
                 },
 
                 async init() {
+                    const agora = new Date();
+
+                    this.hojeStr = agora.toLocaleDateString('pt-BR');
+                    this.hojeISO = this.formatDateISO(agora);
+
                     await this.fetch();
-                    sb.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, () => this.fetch()).subscribe();
+
+                    sb.channel('db-changes')
+                        .on(
+                            'postgres_changes',
+                            { event: '*', schema: 'public', table: 'vendas' },
+                            () => this.fetch()
+                        )
+                        .subscribe();
+
+                    this.setFiltroRapido('todos');
+                },
+
+                formatDateISO(date) {
+                    const ano = date.getFullYear();
+                    const mes = String(date.getMonth() + 1).padStart(2, '0');
+                    const dia = String(date.getDate()).padStart(2, '0');
+                    return `${ano}-${mes}-${dia}`;
+                },
+
+                parsePtBrToDate(dataPtBr) {
+                    if (!dataPtBr || !dataPtBr.includes('/')) return null;
+                    const [dia, mes, ano] = dataPtBr.split('/');
+                    return new Date(`${ano}-${mes}-${dia}T00:00:00`);
                 },
 
                 async fetch() {
-                    const { data, error } = await sb.from('vendas').select('*').order('created_at', { ascending: true });
-                    if (!error) { this.vendas = data || []; this.updateKPIs(); }
+                    const { data, error } = await sb
+                        .from('vendas')
+                        .select('*')
+                        .order('created_at', { ascending: true });
+
+                    if (error) {
+                        console.error('Erro ao buscar vendas:', error);
+                        return;
+                    }
+
+                    this.vendas = data || [];
+                    this.updateKPIsGerais();
+                    this.updateKPIsFiltrados();
                 },
 
-                vendasHoje() { return this.vendas.filter(v => v.data_venda === this.hojeStr); },
+                vendasHoje() {
+                    return this.vendas.filter(v => v.data_venda === this.hojeStr);
+                },
+
+                ticketMedioHoje() {
+                    const vendas = this.vendasHoje();
+                    if (!vendas.length) return 0;
+                    const total = vendas.reduce((acc, v) => acc + Number(v.total), 0);
+                    return total / vendas.length;
+                },
 
                 calcularTotal() {
-                    let base = this.precos[this.pedido.tamanho][this.pedido.tipo];
-                    let extras = this.pedido.extras.reduce((acc, cur) => acc + this.adicionais[cur], 0);
+                    const base = this.precos[this.pedido.tamanho][this.pedido.tipo];
+                    const extras = this.pedido.extras.reduce((acc, cur) => acc + this.adicionais[cur], 0);
                     return base + extras;
                 },
 
                 async salvarVenda() {
                     this.loading = true;
-                    const total = this.calcularTotal();
-                    const payload = {
-                        tamanho: this.pedido.tamanho,
-                        tipo: this.pedido.tipo,
-                        total: total,
-                        data_venda: this.hojeStr,
-                        hora_venda: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                        editado: !!this.editandoId
-                    };
-                    if (this.editandoId) await sb.from('vendas').update(payload).eq('id', this.editandoId);
-                    else await sb.from('vendas').insert([payload]);
-                    
-                    this.limpar();
-                    await this.fetch();
-                    this.loading = false;
-                },
 
-                updateKPIs() {
-                    const agora = new Date();
-                    const week = 7 * 24 * 60 * 60 * 1000;
-                    this.kpis.hoje = this.vendas.filter(v => v.data_venda === this.hojeStr).reduce((a, b) => a + Number(b.total), 0);
-                    this.kpis.semana = this.vendas.filter(v => (agora - new Date(v.created_at)) < week).reduce((a, b) => a + Number(b.total), 0);
-                    this.kpis.mes = this.vendas.filter(v => new Date(v.created_at).getMonth() === agora.getMonth()).reduce((a, b) => a + Number(b.total), 0);
+                    try {
+                        const total = this.calcularTotal();
+
+                        const payload = {
+                            tamanho: this.pedido.tamanho,
+                            tipo: this.pedido.tipo,
+                            extras: this.pedido.extras,
+                            total: total,
+                            data_venda: this.hojeStr,
+                            hora_venda: new Date().toLocaleTimeString('pt-BR', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            }),
+                            editado: !!this.editandoId
+                        };
+
+                        if (this.editandoId) {
+                            const { error } = await sb
+                                .from('vendas')
+                                .update(payload)
+                                .eq('id', this.editandoId);
+
+                            if (error) {
+                                console.error(error);
+                                alert('Erro ao atualizar a venda.');
+                            }
+                        } else {
+                            const { error } = await sb
+                                .from('vendas')
+                                .insert([payload]);
+
+                            if (error) {
+                                console.error(error);
+                                alert('Erro ao salvar a venda.');
+                            }
+                        }
+
+                        this.limpar();
+                        await this.fetch();
+                    } catch (e) {
+                        console.error(e);
+                        alert('Ocorreu um erro ao salvar a venda.');
+                    } finally {
+                        this.loading = false;
+                    }
                 },
 
                 prepararEdicao(v) {
                     this.editandoId = v.id;
-                    this.pedido = { tamanho: v.tamanho, tipo: v.tipo, extras: [] };
+                    this.pedido = {
+                        tamanho: v.tamanho,
+                        tipo: v.tipo,
+                        extras: Array.isArray(v.extras) ? [...v.extras] : []
+                    };
                     this.aba = 'vendas';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
 
-                limpar() { this.editandoId = null; this.pedido = { tamanho: '500ML', tipo: 'tradicional', extras: [] }; },
-                checkLogin() { if(this.senhaInput === '4956') this.auth = true; }
-            }
+                confirmarExclusao(v) {
+                    this.deleteId = v.id;
+                    this.modalDelete = true;
+                },
+
+                async excluirVenda() {
+                    if (!this.deleteId) return;
+
+                    try {
+                        const { error } = await sb
+                            .from('vendas')
+                            .delete()
+                            .eq('id', this.deleteId);
+
+                        if (error) {
+                            console.error(error);
+                            alert('Erro ao excluir a venda.');
+                            return;
+                        }
+
+                        if (this.editandoId === this.deleteId) {
+                            this.limpar();
+                        }
+
+                        this.modalDelete = false;
+                        this.deleteId = null;
+                        await this.fetch();
+                    } catch (e) {
+                        console.error(e);
+                        alert('Ocorreu um erro ao excluir a venda.');
+                    }
+                },
+
+                limpar() {
+                    this.editandoId = null;
+                    this.pedido = {
+                        tamanho: '500ML',
+                        tipo: 'tradicional',
+                        extras: []
+                    };
+                },
+
+                checkLogin() {
+                    if (this.senhaInput === '1234') {
+                        this.auth = true;
+                    } else {
+                        alert('PIN incorreto.');
+                    }
+                },
+
+                updateKPIsGerais() {
+                    const agora = new Date();
+                    const weekMs = 7 * 24 * 60 * 60 * 1000;
+
+                    this.kpis.hoje = this.vendas
+                        .filter(v => v.data_venda === this.hojeStr)
+                        .reduce((a, b) => a + Number(b.total), 0);
+
+                    this.kpis.semana = this.vendas
+                        .filter(v => (agora - new Date(v.created_at)) < weekMs)
+                        .reduce((a, b) => a + Number(b.total), 0);
+
+                    this.kpis.mes = this.vendas
+                        .filter(v => {
+                            const d = new Date(v.created_at);
+                            return d.getMonth() === agora.getMonth() && d.getFullYear() === agora.getFullYear();
+                        })
+                        .reduce((a, b) => a + Number(b.total), 0);
+                },
+
+                vendasFiltradas() {
+                    let lista = [...this.vendas];
+
+                    if (this.filtroInicio) {
+                        const inicio = new Date(`${this.filtroInicio}T00:00:00`);
+                        lista = lista.filter(v => {
+                            const data = this.parsePtBrToDate(v.data_venda) || new Date(v.created_at);
+                            return data >= inicio;
+                        });
+                    }
+
+                    if (this.filtroFim) {
+                        const fim = new Date(`${this.filtroFim}T23:59:59`);
+                        lista = lista.filter(v => {
+                            const data = this.parsePtBrToDate(v.data_venda) || new Date(v.created_at);
+                            return data <= fim;
+                        });
+                    }
+
+                    return lista;
+                },
+
+                updateKPIsFiltrados() {
+                    const lista = this.vendasFiltradas();
+                    const total = lista.reduce((acc, v) => acc + Number(v.total), 0);
+                    const quantidade = lista.length;
+                    const ticket = quantidade ? total / quantidade : 0;
+                    const maior = quantidade ? Math.max(...lista.map(v => Number(v.total))) : 0;
+
+                    this.kpisFiltrados = {
+                        total,
+                        quantidade,
+                        ticket,
+                        maior
+                    };
+                },
+
+                aplicarFiltroManual() {
+                    this.filtroRapido = 'manual';
+
+                    if (!this.filtroInicio || !this.filtroFim) {
+                        alert('Selecione a data inicial e a data final.');
+                        return;
+                    }
+
+                    if (new Date(this.filtroInicio) > new Date(this.filtroFim)) {
+                        alert('A data inicial não pode ser maior que a data final.');
+                        return;
+                    }
+
+                    this.updateKPIsFiltrados();
+                },
+
+                limparFiltro() {
+                    this.filtroInicio = '';
+                    this.filtroFim = '';
+                    this.filtroRapido = 'todos';
+                    this.updateKPIsFiltrados();
+                },
+
+                setFiltroRapido(tipo) {
+                    const hoje = new Date();
+                    this.filtroRapido = tipo;
+
+                    if (tipo === 'todos') {
+                        this.filtroInicio = '';
+                        this.filtroFim = '';
+                    }
+
+                    if (tipo === 'hoje') {
+                        const iso = this.formatDateISO(hoje);
+                        this.filtroInicio = iso;
+                        this.filtroFim = iso;
+                    }
+
+                    if (tipo === '7dias') {
+                        const inicio = new Date();
+                        inicio.setDate(hoje.getDate() - 6);
+
+                        this.filtroInicio = this.formatDateISO(inicio);
+                        this.filtroFim = this.formatDateISO(hoje);
+                    }
+
+                    if (tipo === 'mes') {
+                        const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                        const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
+                        this.filtroInicio = this.formatDateISO(inicioMes);
+                        this.filtroFim = this.formatDateISO(fimMes);
+                    }
+
+                    this.updateKPIsFiltrados();
+                },
+
+                descricaoPeriodo() {
+                    if (!this.filtroInicio && !this.filtroFim) {
+                        return 'Exibindo todo o histórico de vendas.';
+                    }
+
+                    if (this.filtroInicio && this.filtroFim) {
+                        return `De ${this.filtroInicio.split('-').reverse().join('/')} até ${this.filtroFim.split('-').reverse().join('/')}`;
+                    }
+
+                    if (this.filtroInicio) {
+                        return `A partir de ${this.filtroInicio.split('-').reverse().join('/')}`;
+                    }
+
+                    if (this.filtroFim) {
+                        return `Até ${this.filtroFim.split('-').reverse().join('/')}`;
+                    }
+
+                    return 'Período personalizado';
+                },
+
+                maisVendidoTamanho() {
+                    const lista = this.vendasFiltradas();
+                    if (!lista.length) return '';
+
+                    const contador = {};
+                    lista.forEach(v => {
+                        contador[v.tamanho] = (contador[v.tamanho] || 0) + 1;
+                    });
+
+                    return Object.entries(contador).sort((a, b) => b[1] - a[1])[0][0];
+                },
+
+                maisVendidoTipo() {
+                    const lista = this.vendasFiltradas();
+                    if (!lista.length) return '';
+
+                    const contador = {};
+                    lista.forEach(v => {
+                        contador[v.tipo] = (contador[v.tipo] || 0) + 1;
+                    });
+
+                    const top = Object.entries(contador).sort((a, b) => b[1] - a[1])[0];
+                    return top ? this.tipos[top[0]] : '';
+                },
+
+                totalExtrasVendidos() {
+                    const lista = this.vendasFiltradas();
+                    let total = 0;
+
+                    lista.forEach(v => {
+                        if (Array.isArray(v.extras)) {
+                            total += v.extras.length;
+                        }
+                    });
+
+                    return total;
+                }
+            };
         }
     </script>
 </body>
