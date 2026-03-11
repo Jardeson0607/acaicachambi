@@ -1,83 +1,106 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Açaí Mania | PDV & Gerência</title>
+<meta charset="UTF-8" />
 
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#4a1d96" />
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1256/1256758.png" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet" />
+<title>Açaí Mania | PDV & Gerência</title>
 
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f4f4f9;
-            color: #1a1a1a;
-        }
+<!-- PWA / APP SETTINGS -->
+<meta name="theme-color" content="#4a1d96" />
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Açaí Mania">
+<meta name="application-name" content="Açaí Mania">
 
-        [x-cloak] {
-            display: none !important;
-        }
+<!-- ÍCONES DO APP -->
+<link rel="icon" href="logo.jpg">
+<link rel="apple-touch-icon" href="logo.jpg">
 
-        .tab-active {
-            background: #4a1d96 !important;
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(74, 29, 150, 0.3);
-        }
+<!-- MANIFEST -->
+<link rel="manifest" href="manifest.json">
 
-        .card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-            border: 1px solid #eee;
-        }
+<!-- FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet" />
 
-        .extra-selected {
-            border-color: #4a1d96 !important;
-            background-color: #f5f3ff !important;
-            color: #4a1d96 !important;
-            font-weight: 800;
-        }
+<!-- TAILWIND -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-        .input-professional {
-            width: 100%;
-            padding: 14px 16px;
-            border-radius: 14px;
-            border: 1px solid #e5e7eb;
-            background: #fff;
-            outline: none;
-            transition: 0.2s;
-        }
+<!-- SUPABASE -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-        .input-professional:focus {
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.08);
-        }
+<!-- ALPINE -->
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-        .btn-filter {
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            transition: 0.2s;
-            border: 1px solid #e5e7eb;
-            background: white;
-        }
+<style>
 
-        .btn-filter.active {
-            background: #4a1d96;
-            color: white;
-            border-color: #4a1d96;
-            box-shadow: 0 8px 20px rgba(74, 29, 150, 0.18);
-        }
-    </style>
+body {
+font-family: 'Plus Jakarta Sans', sans-serif;
+background-color: #f4f4f9;
+color: #1a1a1a;
+}
+
+[x-cloak] {
+display: none !important;
+}
+
+.tab-active {
+background: #4a1d96 !important;
+color: white !important;
+box-shadow: 0 4px 12px rgba(74, 29, 150, 0.3);
+}
+
+.card {
+background: white;
+border-radius: 20px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+border: 1px solid #eee;
+}
+
+.extra-selected {
+border-color: #4a1d96 !important;
+background-color: #f5f3ff !important;
+color: #4a1d96 !important;
+font-weight: 800;
+}
+
+.input-professional {
+width: 100%;
+padding: 14px 16px;
+border-radius: 14px;
+border: 1px solid #e5e7eb;
+background: #fff;
+outline: none;
+transition: 0.2s;
+}
+
+.input-professional:focus {
+border-color: #7c3aed;
+box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.08);
+}
+
+.btn-filter {
+padding: 10px 14px;
+border-radius: 12px;
+font-size: 11px;
+font-weight: 800;
+text-transform: uppercase;
+transition: 0.2s;
+border: 1px solid #e5e7eb;
+background: white;
+}
+
+.btn-filter.active {
+background: #4a1d96;
+color: white;
+border-color: #4a1d96;
+box-shadow: 0 8px 20px rgba(74, 29, 150, 0.18);
+}
+
+</style>
+
 </head>
 <body x-data="app()" x-init="init()">
 
