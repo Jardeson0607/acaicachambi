@@ -515,7 +515,9 @@ Resumo por pagamento
 
                                     <template x-for="v in vendasFiltradas().slice().reverse()" :key="v.id">
                                         <tr class="border-t border-gray-50 hover:bg-gray-50 transition-colors">
-                                            <td class="p-5 text-gray-400" x-text="v.data_venda + ' ' + v.hora_venda"></td>
+                                            <td class="p-5 text-gray-400" 
+    x-text="new Date(v.created_at).toLocaleDateString('pt-BR') + ' ' + v.hora_venda">
+</td>
 
                                             <td class="p-5">
                                                 <div class="flex items-center gap-2 flex-wrap">
@@ -667,11 +669,21 @@ function app() {
         },
 
         async fetch() {
-    const { data, error } = await sb
+    let query = sb
         .from('vendas')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1000);
+        .order('created_at', { ascending: true });
+
+    // 🔥 se tiver filtro aplicado
+    if (this.filtroInicio) {
+        query = query.gte('created_at', `${this.filtroInicio}T00:00:00`);
+    }
+
+    if (this.filtroFim) {
+        query = query.lte('created_at', `${this.filtroFim}T23:59:59`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Erro ao buscar vendas:', error);
@@ -682,17 +694,30 @@ function app() {
 
     this.updateKPIsGerais();
     this.updateKPIsFiltrados();
-}, // ✅ FALTAVA ESSA VÍRGULA AQUI
-
+},
+        
 vendasHoje() {
-    const hoje = new Date().toISOString().split('T')[0];
+    const hoje = new Date();
+
+    const inicio = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth(),
+        hoje.getDate(),
+        0, 0, 0
+    );
+
+    const fim = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth(),
+        hoje.getDate(),
+        23, 59, 59
+    );
 
     return this.vendas.filter(v => {
-        if (!v.created_at) return false;
-        return v.created_at.startsWith(hoje);
+        const data = new Date(v.created_at);
+        return data >= inicio && data <= fim;
     });
 },
-
         ticketMedioHoje() {
             const vendas = this.vendasHoje();
             if (!vendas.length) return 0;
@@ -872,22 +897,22 @@ vendasHoje() {
         },
 
         aplicarFiltroManual() {
-            this.filtroRapido = 'manual';
+    if (!this.filtroInicio || !this.filtroFim) {
+        return alert('Selecione as datas.');
+    }
 
-            if (!this.filtroInicio || !this.filtroFim) {
-                return alert('Selecione as datas.');
-            }
+    this.filtroRapido = 'manual';
 
-            this.updateKPIsFiltrados();
-        },
+    this.fetch(); // 🔥 IMPORTANTE
+}
 
         limparFiltro() {
-            this.filtroInicio = '';
-            this.filtroFim = '';
-            this.filtroRapido = 'todos';
+    this.filtroInicio = '';
+    this.filtroFim = '';
+    this.filtroRapido = 'todos';
 
-            this.updateKPIsFiltrados();
-        },
+    this.fetch(); // 🔥 IMPORTANTE
+}
 
         setFiltroRapido(tipo) {
             const hoje = new Date();
@@ -897,18 +922,34 @@ vendasHoje() {
                 this.filtroInicio = '';
                 this.filtroFim = '';
             } 
-            else if (tipo === 'hoje') {
-                const iso = hoje.toISOString().split('T')[0];
-                this.filtroInicio = iso;
-                this.filtroFim = iso;
-            } 
-            else if (tipo === '7dias') {
-                const inicio = new Date();
-                inicio.setDate(hoje.getDate() - 6);
+           else if (tipo === 'hoje') {
+    const hojeLocal = new Date();
 
-                this.filtroInicio = inicio.toISOString().split('T')[0];
-                this.filtroFim = hoje.toISOString().split('T')[0];
-            } 
+    const ano = hojeLocal.getFullYear();
+    const mes = String(hojeLocal.getMonth() + 1).padStart(2, '0');
+    const dia = String(hojeLocal.getDate()).padStart(2, '0');
+
+    const iso = `${ano}-${mes}-${dia}`;
+
+    this.filtroInicio = iso;
+    this.filtroFim = iso;
+}
+            else if (tipo === '7dias') {
+    const hojeLocal = new Date();
+
+    const inicio = new Date();
+    inicio.setDate(hojeLocal.getDate() - 6);
+
+    const formatar = (d) => {
+        const ano = d.getFullYear();
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const dia = String(d.getDate()).padStart(2, '0');
+        return `${ano}-${mes}-${dia}`;
+    };
+
+    this.filtroInicio = formatar(inicio);
+    this.filtroFim = formatar(hojeLocal);
+}
             else if (tipo === 'mes') {
                 const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
                 const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
@@ -918,6 +959,7 @@ vendasHoje() {
             }
 
             this.updateKPIsFiltrados();
+            this.fetch(); // 🔥 ESSENCIAL
         },
 
         descricaoPeriodo() {
