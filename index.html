@@ -694,7 +694,7 @@ function app() {
     let query = sb
         .from('vendas')
         .select('*')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false });
 
     // 🔥 se tiver filtro aplicado
     if (this.filtroInicio) {
@@ -713,6 +713,8 @@ function app() {
     }
 
     this.vendas = data || [];
+            
+    console.log('VENDAS CARREGADAS:', this.vendas); // 👈 ADICIONA ISSO
 
     this.updateKPIsGerais();
   //  this.updateKPIsFiltrados();
