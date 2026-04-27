@@ -615,463 +615,314 @@ Resumo por pagamento
     </div>
 
     <script>
-        // CONFIG SUPABASE
-        const SUPABASE_URL = 'https://ascyawnpyinzadvxrlna.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_uF81MlGOAI5oLWVM4o9L6w_jKN90RXI';
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // CONFIG SUPABASE
+    const SUPABASE_URL = 'https://ascyawnpyinzadvxrlna.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_uF81MlGOAI5oLWVM4o9L6w_jKN90RXI';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function app() {
-            return {
-                aba: 'vendas',
-                auth: false,
-                loading: false,
-                senhaInput: '',
-                editandoId: null,
+    function app() {
+        return {
+            aba: 'vendas',
+            auth: false,
+            loading: false,
+            senhaInput: '',
+            editandoId: null,
+            modalDelete: false,
+            deleteId: null,
+            vendas: [],
+            hojeStr: '',
+            hojeISO: '',
+            filtroInicio: '',
+            filtroFim: '',
+            filtroRapido: 'todos',
+            pedido: { tamanho: null, tipo: null, extras: [], pagamento: null },
+            kpis: { hoje: 0, semana: 0, mes: 0 },
+            kpisFiltrados: { total: 0, quantidade: 0, ticket: 0, maior: 0 },
+            precos: {
+                "200ML": { tradicional: 5.0, especial: 8.0, completo: 10.0 },
+                "330ML": { tradicional: 8.5, especial: 11.5, completo: 14.5 },
+                "400ML": { tradicional: 10.0, especial: 14.0, completo: 17.0 },
+                "500ML": { tradicional: 12.0, especial: 17.0, completo: 20.0 },
+                "700ML": { tradicional: 17.0, especial: 22.0, completo: 25.0 },
+                "1 LITRO": { tradicional: 23.0, especial: 29.0, completo: 32.0 }
+            },
+            tipos: {
+                tradicional: "Simples / Tradicional",
+                especial: "Nutella ou Frutas",
+                completo: "Nutella com Frutas"
+            },
+            adicionais: {
+                "Chantilly": 4.0,
+                "Creme de Cookies": 6.0,
+                "Nutella Extra": 6.0,
+                "Água Mineral": 2.0
+            },
 
-                modalDelete: false,
-                deleteId: null,
+            async init() {
+                const agora = new Date();
+                this.hojeStr = agora.toLocaleDateString('pt-BR');
+                this.hojeISO = this.formatDateISO(agora);
 
-                vendas: [],
-                hojeStr: '',
-                hojeISO: '',
+                // Carrega os dados primeiro
+                await this.fetch();
 
-                filtroInicio: '',
-                filtroFim: '',
-                filtroRapido: 'todos',
+                // Configura o Realtime de forma isolada para não travar o init
+                this.setupRealtime();
 
-                pedido: { 
-tamanho: null, 
-tipo: null, 
-extras: [],
-pagamento: null
-},
+                this.setFiltroRapido('todos');
+            },
 
-                kpis: {
-                    hoje: 0,
-                    semana: 0,
-                    mes: 0
-                },
+            setupRealtime() {
+                // Remove canais antigos antes de criar um novo (evita duplicidade no F5)
+                sb.removeAllChannels();
 
-                kpisFiltrados: {
-                    total: 0,
-                    quantidade: 0,
-                    ticket: 0,
-                    maior: 0
-                },
+                sb.channel('vendas_realtime')
+                    .on('postgres_changes', 
+                        { event: '*', schema: 'public', table: 'vendas' }, 
+                        () => {
+                            console.log('Update via Realtime!');
+                            this.fetch();
+                        }
+                    )
+                    .subscribe((status) => {
+                        console.log('Status do Realtime:', status);
+                    });
+            },
 
-                precos: {
-                    "200ML": { tradicional: 5.0, especial: 8.0, completo: 10.0 },
-                    "330ML": { tradicional: 8.5, especial: 11.5, completo: 14.5 },
-                    "400ML": { tradicional: 10.0, especial: 14.0, completo: 17.0 },
-                    "500ML": { tradicional: 12.0, especial: 17.0, completo: 20.0 },
-                    "700ML": { tradicional: 17.0, especial: 22.0, completo: 25.0 },
-                    "1 LITRO": { tradicional: 23.0, especial: 29.0, completo: 32.0 }
-                },
+            formatDateISO(date) {
+                const ano = date.getFullYear();
+                const mes = String(date.getMonth() + 1).padStart(2, '0');
+                const dia = String(date.getDate()).padStart(2, '0');
+                return `${ano}-${mes}-${dia}`;
+            },
 
-                tipos: {
-                    tradicional: "Simples / Tradicional",
-                    especial: "Nutella ou Frutas",
-                    completo: "Nutella com Frutas"
-                },
+            parsePtBrToDate(dataPtBr) {
+                if (!dataPtBr || !dataPtBr.includes('/')) return null;
+                const [dia, mes, ano] = dataPtBr.split('/');
+                return new Date(`${ano}-${mes}-${dia}T00:00:00`);
+            },
 
-                adicionais: {
-                    "Chantilly": 4.0,
-                    "Creme de Cookies": 6.0,
-                    "Nutella Extra": 6.0,
-                    "Água Mineral": 2.0
-                },
+            async fetch() {
+                const { data, error } = await sb
+                    .from('vendas')
+                    .select('*')
+                    .order('created_at', { ascending: true });
 
-                async init() {
-    const agora = new Date();
+                if (error) {
+                    console.error('Erro ao buscar vendas:', error);
+                    return;
+                }
 
-    this.hojeStr = agora.toLocaleDateString('pt-BR');
-    this.hojeISO = this.formatDateISO(agora);
+                this.vendas = data || [];
+                this.updateKPIsGerais();
+                this.updateKPIsFiltrados();
+            },
 
-    // 1. Primeiro busca os dados iniciais
-    await this.fetch();
+            vendasHoje() {
+                return this.vendas.filter(v => v.data_venda === this.hojeStr);
+            },
 
-    // 2. Configura o Realtime CORRETAMENTE (on antes do subscribe)
-    sb.channel('db-changes')
-        .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'vendas' },
-            (payload) => {
-                console.log('Mudança detectada no banco:', payload);
-                this.fetch();
-            }
-        )
-        .subscribe((status) => {
-            console.log('Status do Realtime:', status);
-        });
+            ticketMedioHoje() {
+                const vendas = this.vendasHoje();
+                if (!vendas.length) return 0;
+                const total = vendas.reduce((acc, v) => acc + Number(v.total), 0);
+                return total / vendas.length;
+            },
 
-    // 3. Define o filtro inicial
-    this.setFiltroRapido('todos');
-},
+            calcularTotal() {
+                if (!this.pedido.tamanho || !this.pedido.tipo) return 0;
+                let base = this.precos[this.pedido.tamanho][this.pedido.tipo];
+                let extras = this.pedido.extras.reduce((acc, cur) => acc + this.adicionais[cur], 0);
+                return base + extras;
+            },
 
-                formatDateISO(date) {
-                    const ano = date.getFullYear();
-                    const mes = String(date.getMonth() + 1).padStart(2, '0');
-                    const dia = String(date.getDate()).padStart(2, '0');
-                    return `${ano}-${mes}-${dia}`;
-                },
+            async salvarVenda() {
+                if (!this.pedido.tamanho || !this.pedido.tipo || !this.pedido.pagamento) {
+                    alert("Selecione tamanho, estilo e forma de pagamento!");
+                    return;
+                }
 
-                parsePtBrToDate(dataPtBr) {
-                    if (!dataPtBr || !dataPtBr.includes('/')) return null;
-                    const [dia, mes, ano] = dataPtBr.split('/');
-                    return new Date(`${ano}-${mes}-${dia}T00:00:00`);
-                },
-
-                async fetch() {
-                    const { data, error } = await sb
-                        .from('vendas')
-                        .select('*')
-                        .order('created_at', { ascending: true });
-
-                    if (error) {
-                        console.error('Erro ao buscar vendas:', error);
-                        return;
-                    }
-
-                    this.vendas = data || [];
-                    this.updateKPIsGerais();
-                    this.updateKPIsFiltrados();
-                },
-
-                vendasHoje() {
-                    return this.vendas.filter(v => v.data_venda === this.hojeStr);
-                },
-
-                ticketMedioHoje() {
-                    const vendas = this.vendasHoje();
-                    if (!vendas.length) return 0;
-                    const total = vendas.reduce((acc, v) => acc + Number(v.total), 0);
-                    return total / vendas.length;
-                },
-
-                calcularTotal(){
-
-    if(!this.pedido.tamanho || !this.pedido.tipo){
-        return 0
-    }
-
-    let base = this.precos[this.pedido.tamanho][this.pedido.tipo]
-
-    let extras = this.pedido.extras.reduce(
-        (acc,cur)=>acc + this.adicionais[cur],0
-    )
-
-    return base + extras
-
-},
-
-                async salvarVenda() {
-                    this.loading = true;
-
-                    try {
-                        const total = this.calcularTotal();
-
-                        const payload = {
+                this.loading = true;
+                try {
+                    const total = this.calcularTotal();
+                    const payload = {
                         tamanho: this.pedido.tamanho,
                         tipo: this.pedido.tipo,
                         extras: this.pedido.extras,
                         pagamento: this.pedido.pagamento,
                         total: total,
-                            data_venda: this.hojeStr,
-                            hora_venda: new Date().toLocaleTimeString('pt-BR', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }),
-                            editado: !!this.editandoId
-                        };
+                        data_venda: this.hojeStr,
+                        hora_venda: new Date().toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }),
+                        editado: !!this.editandoId
+                    };
 
-                        if (this.editandoId) {
-                            const { error } = await sb
-                                .from('vendas')
-                                .update(payload)
-                                .eq('id', this.editandoId);
+                    const { error } = this.editandoId
+                        ? await sb.from('vendas').update(payload).eq('id', this.editandoId)
+                        : await sb.from('vendas').insert([payload]);
 
-                            if (error) {
-                                console.error(error);
-                                alert('Erro ao atualizar a venda.');
-                            }
-                        } else {
-                            const { error } = await sb
-                                .from('vendas')
-                                .insert([payload]);
+                    if (error) throw error;
 
-                            if (error) {
-                                console.error(error);
-                                alert('Erro ao salvar a venda.');
-                            }
-                        }
+                    this.limpar();
+                    // O fetch será chamado automaticamente pelo Realtime se funcionar, 
+                    // mas chamamos aqui por segurança caso o Realtime falhe.
+                    await this.fetch(); 
 
-                        this.limpar();
-                        await this.fetch();
-                    } catch (e) {
-                        console.error(e);
-                        alert('Ocorreu um erro ao salvar a venda.');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
+                } catch (e) {
+                    console.error(e);
+                    alert('Erro ao processar venda. Verifique a conexão.');
+                } finally {
+                    this.loading = false;
+                }
+            },
 
-          prepararEdicao(v) {
+            prepararEdicao(v) {
                 this.editandoId = v.id;
                 this.pedido = {
-                tamanho: v.tamanho,
-                tipo: v.tipo,
-                extras: Array.isArray(v.extras) ? [...v.extras] : [],
-                pagamento: v.pagamento || null
+                    tamanho: v.tamanho,
+                    tipo: v.tipo,
+                    extras: Array.isArray(v.extras) ? [...v.extras] : [],
+                    pagamento: v.pagamento || null
                 };
                 this.aba = 'vendas';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                },
+            },
 
-        confirmarExclusao(v) {
-                    this.deleteId = v.id;
-                    this.modalDelete = true;
-                },
+            confirmarExclusao(v) {
+                this.deleteId = v.id;
+                this.modalDelete = true;
+            },
 
-                async excluirVenda() {
-                    if (!this.deleteId) return;
+            async excluirVenda() {
+                if (!this.deleteId) return;
+                try {
+                    const { error } = await sb.from('vendas').delete().eq('id', this.deleteId);
+                    if (error) throw error;
+                    if (this.editandoId === this.deleteId) this.limpar();
+                    this.modalDelete = false;
+                    this.deleteId = null;
+                    await this.fetch();
+                } catch (e) {
+                    console.error(e);
+                    alert('Erro ao excluir.');
+                }
+            },
 
-                    try {
-                        const { error } = await sb
-                            .from('vendas')
-                            .delete()
-                            .eq('id', this.deleteId);
+            limpar() {
+                this.editandoId = null;
+                this.pedido = { tamanho: null, tipo: null, extras: [], pagamento: null };
+            },
 
-                        if (error) {
-                            console.error(error);
-                            alert('Erro ao excluir a venda.');
-                            return;
-                        }
+            checkLogin() {
+                if (this.senhaInput === '9137') {
+                    this.auth = true;
+                } else {
+                    alert('PIN incorreto.');
+                }
+            },
 
-                        if (this.editandoId === this.deleteId) {
-                            this.limpar();
-                        }
+            updateKPIsGerais() {
+                const agora = new Date();
+                const weekMs = 7 * 24 * 60 * 60 * 1000;
+                this.kpis.hoje = this.vendasHoje().reduce((a, b) => a + Number(b.total), 0);
+                this.kpis.semana = this.vendas
+                    .filter(v => (agora - new Date(v.created_at)) < weekMs)
+                    .reduce((a, b) => a + Number(b.total), 0);
+                this.kpis.mes = this.vendas
+                    .filter(v => {
+                        const d = new Date(v.created_at);
+                        return d.getMonth() === agora.getMonth() && d.getFullYear() === agora.getFullYear();
+                    })
+                    .reduce((a, b) => a + Number(b.total), 0);
+            },
 
-                        this.modalDelete = false;
-                        this.deleteId = null;
-                        await this.fetch();
-                    } catch (e) {
-                        console.error(e);
-                        alert('Ocorreu um erro ao excluir a venda.');
-                    }
-                },
+            vendasFiltradas() {
+                let lista = [...this.vendas];
+                if (this.filtroInicio) {
+                    const inicio = new Date(`${this.filtroInicio}T00:00:00`);
+                    lista = lista.filter(v => (this.parsePtBrToDate(v.data_venda) || new Date(v.created_at)) >= inicio);
+                }
+                if (this.filtroFim) {
+                    const fim = new Date(`${this.filtroFim}T23:59:59`);
+                    lista = lista.filter(v => (this.parsePtBrToDate(v.data_venda) || new Date(v.created_at)) <= fim);
+                }
+                return lista;
+            },
 
-               limpar() { 
-                this.editandoId = null; 
-                this.pedido = { 
-                tamanho: null, 
-                tipo: null, 
-                extras: [],
-                pagamento: null
-                }; 
-                },
+            updateKPIsFiltrados() {
+                const lista = this.vendasFiltradas();
+                const total = lista.reduce((acc, v) => acc + Number(v.total), 0);
+                const quantidade = lista.length;
+                this.kpisFiltrados = {
+                    total,
+                    quantidade,
+                    ticket: quantidade ? total / quantidade : 0,
+                    maior: quantidade ? Math.max(...lista.map(v => Number(v.total))) : 0
+                };
+            },
 
-                checkLogin() {
-                    if (this.senhaInput === '9137') {
-                        this.auth = true;
-                    } else {
-                        alert('PIN incorreto.');
-                    }
-                },
+            aplicarFiltroManual() {
+                this.filtroRapido = 'manual';
+                if (!this.filtroInicio || !this.filtroFim) return alert('Selecione as datas.');
+                this.updateKPIsFiltrados();
+            },
 
-                updateKPIsGerais() {
-                    const agora = new Date();
-                    const weekMs = 7 * 24 * 60 * 60 * 1000;
+            limparFiltro() {
+                this.filtroInicio = ''; this.filtroFim = ''; this.filtroRapido = 'todos';
+                this.updateKPIsFiltrados();
+            },
 
-                    this.kpis.hoje = this.vendas
-                        .filter(v => v.data_venda === this.hojeStr)
-                        .reduce((a, b) => a + Number(b.total), 0);
+            setFiltroRapido(tipo) {
+                const hoje = new Date();
+                this.filtroRapido = tipo;
+                if (tipo === 'todos') { this.filtroInicio = ''; this.filtroFim = ''; }
+                else if (tipo === 'hoje') { this.filtroInicio = this.filtroFim = this.formatDateISO(hoje); }
+                else if (tipo === '7dias') {
+                    const inicio = new Date(); inicio.setDate(hoje.getDate() - 6);
+                    this.filtroInicio = this.formatDateISO(inicio); this.filtroFim = this.formatDateISO(hoje);
+                }
+                else if (tipo === 'mes') {
+                    this.filtroInicio = this.formatDateISO(new Date(hoje.getFullYear(), hoje.getMonth(), 1));
+                    this.filtroFim = this.formatDateISO(new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0));
+                }
+                this.updateKPIsFiltrados();
+            },
 
-                    this.kpis.semana = this.vendas
-                        .filter(v => (agora - new Date(v.created_at)) < weekMs)
-                        .reduce((a, b) => a + Number(b.total), 0);
+            descricaoPeriodo() {
+                if (!this.filtroInicio && !this.filtroFim) return 'Exibindo todo o histórico.';
+                return `Período: ${this.filtroInicio || '...'} até ${this.filtroFim || '...'}`;
+            },
 
-                    this.kpis.mes = this.vendas
-                        .filter(v => {
-                            const d = new Date(v.created_at);
-                            return d.getMonth() === agora.getMonth() && d.getFullYear() === agora.getFullYear();
-                        })
-                        .reduce((a, b) => a + Number(b.total), 0);
-                },
+            maisVendidoTamanho() {
+                const lista = this.vendasFiltradas();
+                if (!lista.length) return '—';
+                const cont = {};
+                lista.forEach(v => cont[v.tamanho] = (cont[v.tamanho] || 0) + 1);
+                return Object.entries(cont).sort((a, b) => b[1] - a[1])[0][0];
+            },
 
-                vendasFiltradas() {
-                    let lista = [...this.vendas];
+            maisVendidoTipo() {
+                const lista = this.vendasFiltradas();
+                if (!lista.length) return '—';
+                const cont = {};
+                lista.forEach(v => cont[v.tipo] = (cont[v.tipo] || 0) + 1);
+                const top = Object.entries(cont).sort((a, b) => b[1] - a[1])[0];
+                return top ? this.tipos[top[0]] : '—';
+            },
 
-                    if (this.filtroInicio) {
-                        const inicio = new Date(`${this.filtroInicio}T00:00:00`);
-                        lista = lista.filter(v => {
-                            const data = this.parsePtBrToDate(v.data_venda) || new Date(v.created_at);
-                            return data >= inicio;
-                        });
-                    }
+            totalExtrasVendidos() {
+                return this.vendasFiltradas().reduce((acc, v) => acc + (v.extras?.length || 0), 0);
+            },
 
-                    if (this.filtroFim) {
-                        const fim = new Date(`${this.filtroFim}T23:59:59`);
-                        lista = lista.filter(v => {
-                            const data = this.parsePtBrToDate(v.data_venda) || new Date(v.created_at);
-                            return data <= fim;
-                        });
-                    }
-
-                    return lista;
-                },
-
-                updateKPIsFiltrados() {
-                    const lista = this.vendasFiltradas();
-                    const total = lista.reduce((acc, v) => acc + Number(v.total), 0);
-                    const quantidade = lista.length;
-                    const ticket = quantidade ? total / quantidade : 0;
-                    const maior = quantidade ? Math.max(...lista.map(v => Number(v.total))) : 0;
-
-                    this.kpisFiltrados = {
-                        total,
-                        quantidade,
-                        ticket,
-                        maior
-                    };
-                },
-
-                aplicarFiltroManual() {
-                    this.filtroRapido = 'manual';
-
-                    if (!this.filtroInicio || !this.filtroFim) {
-                        alert('Selecione a data inicial e a data final.');
-                        return;
-                    }
-
-                    if (new Date(this.filtroInicio) > new Date(this.filtroFim)) {
-                        alert('A data inicial não pode ser maior que a data final.');
-                        return;
-                    }
-
-                    this.updateKPIsFiltrados();
-                },
-
-                limparFiltro() {
-                    this.filtroInicio = '';
-                    this.filtroFim = '';
-                    this.filtroRapido = 'todos';
-                    this.updateKPIsFiltrados();
-                },
-
-                setFiltroRapido(tipo) {
-                    const hoje = new Date();
-                    this.filtroRapido = tipo;
-
-                    if (tipo === 'todos') {
-                        this.filtroInicio = '';
-                        this.filtroFim = '';
-                    }
-
-                    if (tipo === 'hoje') {
-                        const iso = this.formatDateISO(hoje);
-                        this.filtroInicio = iso;
-                        this.filtroFim = iso;
-                    }
-
-                    if (tipo === '7dias') {
-                        const inicio = new Date();
-                        inicio.setDate(hoje.getDate() - 6);
-
-                        this.filtroInicio = this.formatDateISO(inicio);
-                        this.filtroFim = this.formatDateISO(hoje);
-                    }
-
-                    if (tipo === 'mes') {
-                        const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-                        const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-
-                        this.filtroInicio = this.formatDateISO(inicioMes);
-                        this.filtroFim = this.formatDateISO(fimMes);
-                    }
-
-                    this.updateKPIsFiltrados();
-                },
-
-                descricaoPeriodo() {
-                    if (!this.filtroInicio && !this.filtroFim) {
-                        return 'Exibindo todo o histórico de vendas.';
-                    }
-
-                    if (this.filtroInicio && this.filtroFim) {
-                        return `De ${this.filtroInicio.split('-').reverse().join('/')} até ${this.filtroFim.split('-').reverse().join('/')}`;
-                    }
-
-                    if (this.filtroInicio) {
-                        return `A partir de ${this.filtroInicio.split('-').reverse().join('/')}`;
-                    }
-
-                    if (this.filtroFim) {
-                        return `Até ${this.filtroFim.split('-').reverse().join('/')}`;
-                    }
-
-                    return 'Período personalizado';
-                },
-
-                maisVendidoTamanho() {
-                    const lista = this.vendasFiltradas();
-                    if (!lista.length) return '';
-
-                    const contador = {};
-                    lista.forEach(v => {
-                        contador[v.tamanho] = (contador[v.tamanho] || 0) + 1;
-                    });
-
-                    return Object.entries(contador).sort((a, b) => b[1] - a[1])[0][0];
-                },
-
-                maisVendidoTipo() {
-                    const lista = this.vendasFiltradas();
-                    if (!lista.length) return '';
-
-                    const contador = {};
-                    lista.forEach(v => {
-                        contador[v.tipo] = (contador[v.tipo] || 0) + 1;
-                    });
-
-                    const top = Object.entries(contador).sort((a, b) => b[1] - a[1])[0];
-                    return top ? this.tipos[top[0]] : '';
-                },
-
-totalExtrasVendidos() {
-
-    const lista = this.vendasFiltradas();
-    let total = 0;
-
-    lista.forEach(v => {
-        if (Array.isArray(v.extras)) {
-            total += v.extras.length;
-        }
-    });
-
-    return total;
-},
-
-resumoPagamentos(){
-
-    const resumo={
-        pix:0,
-        cartao:0,
-        dinheiro:0
+            resumoPagamentos() {
+                const res = { pix: 0, cartao: 0, dinheiro: 0 };
+                this.vendasFiltradas().forEach(v => {
+                    if (v.pagamento && res[v.pagamento] !== undefined) res[v.pagamento] += Number(v.total);
+                });
+                return res;
+            }
+        };
     }
-
-    this.vendasFiltradas().forEach(v=>{
-
-        if(v.pagamento && resumo[v.pagamento] !== undefined){
-            resumo[v.pagamento]+=Number(v.total)
-        }
-
-    })
-
-    return resumo
-}
-
-            };
-        }
-    </script>
-</body>
-</html>
+</script>
