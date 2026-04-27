@@ -682,23 +682,31 @@ pagamento: null
                 },
 
                 async init() {
-                    const agora = new Date();
+    const agora = new Date();
 
-                    this.hojeStr = agora.toLocaleDateString('pt-BR');
-                    this.hojeISO = this.formatDateISO(agora);
+    this.hojeStr = agora.toLocaleDateString('pt-BR');
+    this.hojeISO = this.formatDateISO(agora);
 
-                    await this.fetch();
+    // 1. Primeiro busca os dados iniciais
+    await this.fetch();
 
-                    sb.channel('db-changes')
-                        .on(
-                            'postgres_changes',
-                            { event: '*', schema: 'public', table: 'vendas' },
-                            () => this.fetch()
-                        )
-                        .subscribe();
+    // 2. Configura o Realtime CORRETAMENTE (on antes do subscribe)
+    sb.channel('db-changes')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'vendas' },
+            (payload) => {
+                console.log('Mudança detectada no banco:', payload);
+                this.fetch();
+            }
+        )
+        .subscribe((status) => {
+            console.log('Status do Realtime:', status);
+        });
 
-                    this.setFiltroRapido('todos');
-                },
+    // 3. Define o filtro inicial
+    this.setFiltroRapido('todos');
+},
 
                 formatDateISO(date) {
                     const ano = date.getFullYear();
