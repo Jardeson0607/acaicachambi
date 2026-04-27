@@ -682,16 +682,16 @@ function app() {
 
     this.updateKPIsGerais();
     this.updateKPIsFiltrados();
-}
-        // 🔥 CORRETO (usa created_at)
-        vendasHoje() {
-            const hoje = new Date().toISOString().split('T')[0];
+}, // ✅ FALTAVA ESSA VÍRGULA AQUI
 
-            return this.vendas.filter(v => {
-                if (!v.created_at) return false;
-                return v.created_at.startsWith(hoje);
-            });
-        },
+vendasHoje() {
+    const hoje = new Date().toISOString().split('T')[0];
+
+    return this.vendas.filter(v => {
+        if (!v.created_at) return false;
+        return v.created_at.startsWith(hoje);
+    });
+},
 
         ticketMedioHoje() {
             const vendas = this.vendasHoje();
