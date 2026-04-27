@@ -667,38 +667,22 @@ function app() {
         },
 
         async fetch() {
-    let allData = [];
-    let from = 0;
-    let to = 999;
-    let finished = false;
+    const { data, error } = await sb
+        .from('vendas')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1000);
 
-    while (!finished) {
-        const { data, error } = await sb
-            .from('vendas')
-            .select('*')
-            .order('created_at', { ascending: true })
-            .range(from, to);
-
-        if (error) {
-            console.error('Erro ao buscar vendas:', error);
-            return;
-        }
-
-        if (data.length === 0) {
-            finished = true;
-        } else {
-            allData = [...allData, ...data];
-            from += 1000;
-            to += 1000;
-        }
+    if (error) {
+        console.error('Erro ao buscar vendas:', error);
+        return;
     }
 
-    this.vendas = allData;
+    this.vendas = data || [];
 
     this.updateKPIsGerais();
     this.updateKPIsFiltrados();
 }
-
         // 🔥 CORRETO (usa created_at)
         vendasHoje() {
             const hoje = new Date().toISOString().split('T')[0];
