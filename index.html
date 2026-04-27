@@ -691,33 +691,26 @@ function app() {
         },
 
         async fetch() {
-    let query = sb
+    const { data, error } = await sb
         .from('vendas')
         .select('*')
         .order('created_at', { ascending: false });
-
-    // 🔥 se tiver filtro aplicado
-    if (this.filtroInicio) {
-        query = query.gte('created_at', `${this.filtroInicio}T00:00:00`);
-    }
-
-    if (this.filtroFim) {
-        query = query.lte('created_at', `${this.filtroFim}T23:59:59`);
-    }
-
-    const { data, error } = await query;
 
     if (error) {
         console.error('Erro ao buscar vendas:', error);
         return;
     }
 
-    this.vendas = data || [];
-            
-    console.log('VENDAS CARREGADAS:', this.vendas); // 👈 ADICIONA ISSO
+    // 🔥 guarda tudo
+    this.vendasOriginais = data || [];
+
+    // 🔥 usa tudo inicialmente
+    this.vendas = [...this.vendasOriginais];
+
+    console.log('VENDAS CARREGADAS:', this.vendas);
 
     this.updateKPIsGerais();
-  //  this.updateKPIsFiltrados();
+    this.updateKPIsFiltrados();
 },
         
 vendasHoje() {
@@ -920,9 +913,17 @@ vendasHoje() {
 
     this.filtroRapido = 'manual';
 
-    this.fetch(); // 🔥 IMPORTANTE
-},
+    const inicio = new Date(`${this.filtroInicio}T00:00:00`);
+    const fim = new Date(`${this.filtroFim}T23:59:59`);
 
+    this.vendas = this.vendasOriginais.filter(v => {
+        const d = new Date(v.created_at);
+        return d >= inicio && d <= fim;
+    });
+
+    this.updateKPIsGerais();
+    this.updateKPIsFiltrados();
+},
         limparFiltro() {
     this.filtroInicio = '';
     this.filtroFim = '';
@@ -984,8 +985,8 @@ vendasHoje() {
     this.filtroFim = formatar(fim);
 }
 
+            this.updateKPIsGerais();
             this.updateKPIsFiltrados();
-            this.fetch(); // 🔥 ESSENCIAL
         },
 
         descricaoPeriodo() {
